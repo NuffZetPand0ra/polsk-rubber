@@ -14,9 +14,12 @@ interface UseScoringInput extends ScoreBoardInput {
   }
 }
 
+export type ScoringErrorKey = 'invalidHcp' | 'scoringFailed'
+
 export function useScoring(input: UseScoringInput): {
   data: ScoreBoardOutput | null
-  error: string | null
+  errorKey: ScoringErrorKey | null
+  errorMessage: string | null
 } {
   return useMemo(() => {
     const declaringSide = getDeclaringSide(input.declarer)
@@ -28,7 +31,8 @@ export function useScoring(input: UseScoringInput): {
     if (declaringHcp == null || !validateManualHcp(declaringHcp)) {
       return {
         data: null,
-        error: 'Declaring HCP must be an integer between 0 and 40.',
+        errorKey: 'invalidHcp' as const,
+        errorMessage: null,
       }
     }
 
@@ -63,12 +67,15 @@ export function useScoring(input: UseScoringInput): {
           diff,
           imp,
         },
-        error: null,
+        errorKey: null,
+        errorMessage: null,
       }
     } catch (error) {
       return {
         data: null,
-        error: error instanceof Error ? error.message : 'Failed to score board.',
+        errorKey: 'scoringFailed' as const,
+        errorMessage:
+          error instanceof Error ? error.message : 'Failed to score board.',
       }
     }
   }, [input])

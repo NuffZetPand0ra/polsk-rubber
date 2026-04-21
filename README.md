@@ -20,6 +20,12 @@ Single-table Butler-style contract bridge scoring app. Each board compares actua
 
 Supabase persistence and Claude hand recognition are intentionally out of scope in this first implementation slice.
 
+## Product Direction Notes
+
+- Manual scoring must remain usable offline.
+- AI hand recognition is optional and requires internet.
+- i18n is now in place with Danish as default and English as fallback.
+
 ## Development
 
 ```bash
