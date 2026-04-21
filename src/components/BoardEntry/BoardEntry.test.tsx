@@ -26,7 +26,7 @@ describe('BoardEntry', () => {
     fireEvent.change(hcpInput, { target: { value: '41' } })
 
     expect(
-      screen.getByText('Melder-HCP skal vaere et heltal mellem 0 og 40.'),
+      screen.getByText('Melder-HCP skal være et heltal mellem 0 og 40.'),
     ).toBeInTheDocument()
   })
 })

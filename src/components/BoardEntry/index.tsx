@@ -87,12 +87,6 @@ export default function BoardEntry() {
         </div>
       </header>
 
-      <div className="mb-4 grid gap-2 rounded-2xl border border-slate-200 bg-white p-3 text-sm text-slate-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 md:grid-cols-3 md:gap-4 md:p-4">
-        <p><span className="font-semibold text-primary">1.</span> {t('steps.one')}</p>
-        <p><span className="font-semibold text-primary">2.</span> {t('steps.two')}</p>
-        <p><span className="font-semibold text-primary">3.</span> {t('steps.three')}</p>
-      </div>
-
       <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
         <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-5">
           <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 md:text-2xl">{t('section.boardEntry')}</h2>
