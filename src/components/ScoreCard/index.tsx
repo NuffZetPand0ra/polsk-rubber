@@ -5,39 +5,45 @@ interface ScoreCardProps {
 }
 
 export default function ScoreCard({ data }: ScoreCardProps) {
-  const impClass = data.imp > 0 ? 'text-emerald-300' : data.imp < 0 ? 'text-rose-300' : 'text-stone-200'
+  const impClass = data.imp > 0 ? 'text-emerald-600 dark:text-emerald-400' : data.imp < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-slate-200'
 
   return (
-    <section className="rounded-2xl border border-stone-700 bg-stone-900/70 p-5 shadow-lg shadow-black/30">
-      <h2 className="font-serif text-2xl text-amber-100">Board Result</h2>
-      <dl className="mt-4 grid grid-cols-2 gap-3 text-sm text-stone-200 md:text-base">
-        <div>
-          <dt className="text-stone-400">Declaring Side</dt>
-          <dd className="font-semibold">{data.declaringSide}</dd>
+    <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900 lg:sticky lg:top-5 md:p-5">
+      <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 md:text-2xl">Board Result</h2>
+
+      <div className="mt-4 rounded-2xl border border-blue-100 bg-blue-50 p-4 dark:border-slate-700 dark:bg-slate-800">
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-700 dark:text-blue-300">IMP</p>
+        <p className={`mt-2 text-5xl font-bold leading-none md:text-6xl ${impClass}`}>
+          {data.imp > 0 ? `+${data.imp}` : data.imp}
+        </p>
+      </div>
+
+      <dl className="mt-4 grid grid-cols-1 gap-3 text-sm text-slate-700 dark:text-slate-300 sm:grid-cols-2 md:text-base">
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800">
+          <dt className="text-slate-500 dark:text-slate-400">Declaring Side</dt>
+          <dd className="font-semibold text-slate-900 dark:text-slate-100">{data.declaringSide}</dd>
         </div>
-        <div>
-          <dt className="text-stone-400">Vulnerable</dt>
-          <dd className="font-semibold">{data.declaringVulnerable ? 'Yes' : 'No'}</dd>
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800">
+          <dt className="text-slate-500 dark:text-slate-400">Vulnerable</dt>
+          <dd className="font-semibold text-slate-900 dark:text-slate-100">{data.declaringVulnerable ? 'Yes' : 'No'}</dd>
         </div>
-        <div>
-          <dt className="text-stone-400">Declaring HCP</dt>
-          <dd className="font-semibold">{data.declaringHcp}</dd>
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800">
+          <dt className="text-slate-500 dark:text-slate-400">Declaring HCP</dt>
+          <dd className="font-semibold text-slate-900 dark:text-slate-100">{data.declaringHcp}</dd>
         </div>
-        <div>
-          <dt className="text-stone-400">Datum (raw/rounded)</dt>
-          <dd className="font-semibold">{data.datumRaw} / {data.datumRounded}</dd>
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800">
+          <dt className="text-slate-500 dark:text-slate-400">Datum (raw/rounded)</dt>
+          <dd className="font-semibold text-slate-900 dark:text-slate-100">{data.datumRaw} / {data.datumRounded}</dd>
         </div>
-        <div>
-          <dt className="text-stone-400">Actual Score (NS)</dt>
-          <dd className="font-semibold">{data.actualScore}</dd>
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800">
+          <dt className="text-slate-500 dark:text-slate-400">Actual Score (NS)</dt>
+          <dd className="font-semibold text-slate-900 dark:text-slate-100">{data.actualScore}</dd>
         </div>
-        <div>
-          <dt className="text-stone-400">Diff</dt>
-          <dd className="font-semibold">{data.diff}</dd>
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800">
+          <dt className="text-slate-500 dark:text-slate-400">Diff</dt>
+          <dd className="font-semibold text-slate-900 dark:text-slate-100">{data.diff}</dd>
         </div>
       </dl>
-      <p className="mt-6 text-lg text-stone-300">IMP</p>
-      <p className={`text-5xl font-bold ${impClass}`}>{data.imp > 0 ? `+${data.imp}` : data.imp}</p>
     </section>
   )
 }
