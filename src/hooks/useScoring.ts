@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type { Hand, ScoreBoardInput, ScoreBoardOutput } from '../types'
 import { getDatumForBoard, getDeclaringSide } from '../utils/datum'
-import { computeDeclaringHcp, computeHandHcp, validateManualHcp } from '../utils/hcp'
+import { computeHandHcp, validateManualHcp } from '../utils/hcp'
 import { scoreBoard } from '../utils/imp'
 import { computeActualScore } from '../utils/scoring'
 

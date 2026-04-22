@@ -42,6 +42,7 @@ export type TranslationKey =
   | 'score.declaringHcp'
   | 'score.datum'
   | 'score.actualNs'
+  | 'score.actualScore'
   | 'score.diff'
   | 'result.made'
   | 'preview.button.show'
@@ -111,6 +112,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'score.declaringHcp': 'Melder-HCP',
     'score.datum': 'Datum (rå/afrundet)',
     'score.actualNs': 'Faktisk score (NS)',
+    'score.actualScore': 'Faktisk score',
     'score.diff': 'Diff',
     'result.made': 'Vundet',
     'preview.button.show': 'Vis datum-skema',
@@ -179,6 +181,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'score.declaringHcp': 'Declaring HCP',
     'score.datum': 'Datum (raw/rounded)',
     'score.actualNs': 'Actual Score (NS)',
+    'score.actualScore': 'Actual Score',
     'score.diff': 'Diff',
     'result.made': 'Made',
     'preview.button.show': 'Preview score schema',
