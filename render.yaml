@@ -1,7 +1,9 @@
-staticSites:
-  - name: polsk-rubber
+services:
+  - type: web
+    name: polsk-rubber
+    env: static
     buildCommand: npm ci && npm run build
-    publishPath: dist
+    staticPublishPath: dist
     pullRequestPreviewsEnabled: true
     envVars:
       - key: NODE_VERSION
