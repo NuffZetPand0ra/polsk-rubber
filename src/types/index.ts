@@ -58,6 +58,65 @@ export interface Player {
   tournament_id: string
 }
 
+/** How the match score is aggregated across boards. */
+export type MatchFormat = 'vp' | 'carry-over'
+
+/**
+ * A single scored board within a match.
+ * Mirrors BoardResult but is self-contained (no separate Board record needed).
+ */
+export interface MatchBoard {
+  boardNumber: number
+  vulnerability: Vulnerability
+  declarer: Seat
+  contract: string
+  doubled: Doubled
+  result: number
+  declaringSide: Side
+  declaringHcp: number
+  /** Raw bridge score from NS perspective */
+  actualScore: number
+  /** Datum used (raw, before rounding) */
+  datum: number
+  /** IMP score for this board (NS perspective, negative = EW won) */
+  imp: number
+}
+
+/**
+ * A single head-to-head match between two pairs.
+ * Boards are entered one at a time.
+ */
+export interface Match {
+  id: string
+  tournamentId: string
+  round: number
+  nsPair: string
+  ewPair: string
+  /** Boards played so far */
+  boards: MatchBoard[]
+  /** Total IMPs (NS perspective). Computed, stored for quick access. */
+  totalImp: number
+  /**
+   * VP result once all boards are played.
+   * [nsVP, ewVP] — only set when boards.length === tournament.boardsPerMatch
+   */
+  vpResult: [number, number] | null
+  playedAt: string
+}
+
+/**
+ * Top-level tournament configuration.
+ */
+export interface Tournament {
+  id: string
+  name: string
+  /** How many boards are played per match */
+  boardsPerMatch: number
+  matchFormat: MatchFormat
+  datumSchema: DatumSchema
+  createdAt: string
+}
+
 export interface Tournament {
   id: string
   name: string
