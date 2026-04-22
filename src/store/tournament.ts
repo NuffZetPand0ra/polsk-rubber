@@ -83,6 +83,8 @@ export const useTournamentStore = create<TournamentState>()(
           matchFormat: opts.matchFormat,
           datumSchema: opts.datumSchema,
           createdAt: new Date().toISOString(),
+          players: [],
+          sessions: [],
         }
         set((state) => ({ tournaments: [...state.tournaments, tournament] }))
         return tournament

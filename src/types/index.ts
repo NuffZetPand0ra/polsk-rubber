@@ -117,14 +117,7 @@ export interface Tournament {
   createdAt: string
 }
 
-export interface Tournament {
-  id: string
-  name: string
-  created_at: string
-  datum_schema: DatumSchema
-  players: Player[]
-  sessions: Session[]
-}
+// ...existing code...
 
 export interface ScoreBoardInput {
   contract: string

@@ -10,6 +10,8 @@ export default function JustPlay() {
     matchFormat: 'vp',
     datumSchema: 'modern',
     createdAt: '',
+    players: [],
+    sessions: [],
   }
   const [showEntry, setShowEntry] = useState(true)
 

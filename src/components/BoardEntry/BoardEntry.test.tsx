@@ -11,6 +11,8 @@ const mockTournament: Tournament = {
   matchFormat: 'vp',
   datumSchema: 'modern',
   createdAt: new Date().toISOString(),
+  players: [],
+  sessions: [],
 }
 
 function renderWithProviders() {
