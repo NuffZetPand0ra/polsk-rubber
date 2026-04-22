@@ -187,7 +187,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
       setDeclarer('N')
       setResult(0)
       setDoubled(null)
-      setManualHcp(24)
+      setManualHcp(20)
     }
   }
 
