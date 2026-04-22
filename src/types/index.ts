@@ -117,6 +117,8 @@ export interface Tournament {
   createdAt: string
   players: Player[]
   sessions: Session[]
+  /** Optional function to calculate VP from IMPs and boards */
+  vpTable?: (imp: number, boards: number) => number
 }
 
 // ...existing code...
