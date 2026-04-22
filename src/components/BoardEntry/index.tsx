@@ -293,10 +293,15 @@ export default function BoardEntry({ tournament, onBack }: Props) {
                 min={1}
                 max={tournament.boardsPerMatch}
                 className="ml-1 w-16 rounded border border-slate-300 p-1 text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-                value={boardNumber}
+                value={boardNumber === null ? '' : boardNumber}
                 onChange={e => {
-                  const n = Math.max(1, Math.min(Number(e.target.value), tournament.boardsPerMatch))
-                  setBoardNumber(n)
+                  const val = e.target.value;
+                  if (val === '') {
+                    setBoardNumber(null as any); // allow empty
+                  } else {
+                    const n = Math.max(1, Math.min(Number(val), tournament.boardsPerMatch));
+                    setBoardNumber(n);
+                  }
                 }}
               />
             </label>
@@ -469,8 +474,15 @@ export default function BoardEntry({ tournament, onBack }: Props) {
                 min={0}
                 max={40}
                 className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2.5 text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-blue-900"
-                value={manualHcp}
-                onChange={(event) => setManualHcp(Number(event.target.value))}
+                value={manualHcp === null ? '' : manualHcp}
+                onChange={event => {
+                  const val = event.target.value;
+                  if (val === '') {
+                    setManualHcp(null as any); // allow empty
+                  } else {
+                    setManualHcp(Number(val));
+                  }
+                }}
               />
             </label>
           </div>
