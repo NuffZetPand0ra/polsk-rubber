@@ -488,15 +488,17 @@ export default function BoardEntry() {
               <p className="mt-2 rounded-lg border border-red-200 bg-red-50 p-2 text-xs text-red-700">{cameraError}</p>
             ) : null}
 
-            <div className="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/60">
-              <video
-                ref={videoRef}
-                className="h-48 w-full object-cover"
-                autoPlay
-                playsInline
-                muted
-              />
-            </div>
+            {isCameraActive ? (
+              <div className="mt-3 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/60">
+                <video
+                  ref={videoRef}
+                  className="h-48 w-full object-cover"
+                  autoPlay
+                  playsInline
+                  muted
+                />
+              </div>
+            ) : null}
             <canvas ref={canvasRef} className="hidden" />
 
             {scanResult ? (
