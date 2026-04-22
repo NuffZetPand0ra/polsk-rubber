@@ -29,15 +29,40 @@ const doubledOptions: Array<{ labelKey: 'doubled.undoubled'; value: Doubled }> =
 
 // Add state for board number and match tally
 export default function BoardEntry({ tournament, onBack }: Props) {
-  const [boardNumber, setBoardNumber] = useState(1)
-  const [impTally, setImpTally] = useState(0)
-  const [boardsPlayed, setBoardsPlayed] = useState(0)
-  // Prepare for sections: results are stored as { [tournamentId]: { [sectionId]: BoardResult[] } }
   const sectionId = 'main' // Placeholder for future section support
-  const [boardResults, setBoardResults] = useState<any[]>([])
+  const [boardResults, setBoardResults] = useState<any[]>(() => {
+    const key = `boardResults:${tournament.id}`
+    const stored = localStorage.getItem(key)
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored)
+        return parsed[sectionId] || []
+      } catch {}
+    }
+    return []
+  })
+  const [boardNumber, setBoardNumber] = useState(() => {
+    const key = `boardResults:${tournament.id}`
+    const stored = localStorage.getItem(key)
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored)
+        const results = parsed[sectionId] || []
+        if (results.length > 0) {
+          const lastBoard = Math.max(...results.map(r => r.board))
+          return lastBoard + 1
+        }
+      } catch {}
+    }
+    return 1
+  })
   const datumSchema = tournament.datumSchema
   const { isDark, toggleTheme } = useTheme()
   const { language, setLanguage, t } = useI18n()
+
+  // Derived values for tally and boards played
+  const boardsPlayed = boardResults.length
+  const impTally = boardResults.reduce((sum, r) => sum + r.imp, 0)
 
   const [contractLevel, setContractLevel] = useState<number>(1)
   const [contractSuit, setContractSuit] = useState<(typeof contractSuits)[number]>('C')
@@ -45,7 +70,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
   const [result, setResult] = useState(0)
   const [vulnerability, setVulnerability] = useState<Vulnerability>(getBoardVulnerability(1))
   const [doubled, setDoubled] = useState<Doubled>(null)
-  const [manualHcp, setManualHcp] = useState(24)
+  const [manualHcp, setManualHcp] = useState(20)
   const [showSchemaPreview, setShowSchemaPreview] = useState(false)
 
   const contract = `${contractLevel}${contractSuit}`
@@ -67,17 +92,22 @@ export default function BoardEntry({ tournament, onBack }: Props) {
   )
 
 
-  // Load boardResults from localStorage on mount
+  // Load boardResults from localStorage on mount and set next board number
   useEffect(() => {
     const key = `boardResults:${tournament.id}`
     const stored = localStorage.getItem(key)
     if (stored) {
       try {
         const parsed = JSON.parse(stored)
-        setBoardResults(parsed[sectionId] || [])
+        const results = parsed[sectionId] || []
+        setBoardResults(results)
+        if (results.length > 0) {
+          const lastBoard = Math.max(...results.map(r => r.board))
+          setBoardNumber(lastBoard + 1)
+        }
       } catch {}
     }
-  }, [tournament.id])
+  }, [tournament.id, sectionId])
 
   // Save boardResults to localStorage whenever it changes
   useEffect(() => {
@@ -132,8 +162,6 @@ export default function BoardEntry({ tournament, onBack }: Props) {
   // Handler for submitting a board result and updating tally
   const handleSubmitBoard = () => {
     if (data) {
-      setImpTally((prev) => prev + data.imp)
-      setBoardsPlayed((prev) => prev + 1)
       setBoardNumber((prev) => {
         const next = prev + 1
         setVulnerability(getBoardVulnerability(next))

@@ -5,15 +5,20 @@ interface ScoreCardProps {
   data: ScoreBoardOutput
 }
 
-// Always show IMP from declarer's side
-function getDeclarerImp(data: ScoreBoardOutput): number {
-  // If declarer is NS, IMP is as is; if EW, flip sign
-  return data.declaringSide === 'NS' ? data.imp : -data.imp
+
+
+// Always show IMP from declarer's perspective
+function getDeclarerImp(data: ScoreBoardOutput, declarer: 'NS' | 'EW'): number {
+  return declarer === 'NS' ? data.imp : -data.imp
 }
+
+
 
 export default function ScoreCard({ data }: ScoreCardProps) {
   const { t } = useI18n()
-  const declarerImp = getDeclarerImp(data)
+  // Use explicit declaringSide from ScoreBoardOutput
+  const declarer: 'NS' | 'EW' = data.declaringSide
+  const declarerImp = getDeclarerImp(data, declarer)
   const impClass = declarerImp > 0 ? 'text-emerald-600 dark:text-emerald-400' : declarerImp < 0 ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-slate-200'
 
   return (
@@ -33,10 +38,6 @@ export default function ScoreCard({ data }: ScoreCardProps) {
           <dd className="font-semibold text-slate-900 dark:text-slate-100">{data.declaringSide}</dd>
         </div>
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800">
-          <dt className="text-slate-500 dark:text-slate-400">{t('score.vulnerable')}</dt>
-          <dd className="font-semibold text-slate-900 dark:text-slate-100">{data.declaringVulnerable ? t('score.yes') : t('score.no')}</dd>
-        </div>
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800">
           <dt className="text-slate-500 dark:text-slate-400">{t('score.declaringHcp')}</dt>
           <dd className="font-semibold text-slate-900 dark:text-slate-100">{data.declaringHcp}</dd>
         </div>
@@ -45,7 +46,7 @@ export default function ScoreCard({ data }: ScoreCardProps) {
           <dd className="font-semibold text-slate-900 dark:text-slate-100">{data.datumRaw} / {data.datumRounded}</dd>
         </div>
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800">
-          <dt className="text-slate-500 dark:text-slate-400">{t('score.actualNs')}</dt>
+          <dt className="text-slate-500 dark:text-slate-400">{t('score.actualScore')}</dt>
           <dd className="font-semibold text-slate-900 dark:text-slate-100">{data.actualScore}</dd>
         </div>
         <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-800">

@@ -132,8 +132,9 @@ export interface ScoreBoardInput {
 }
 
 export interface ScoreBoardOutput {
+  majoritySide: Side
+  majorityHcp: number
   declaringSide: Side
-  declaringVulnerable: boolean
   declaringHcp: number
   datumRaw: number
   datumRounded: number
