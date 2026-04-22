@@ -1,8 +1,40 @@
+// Golden mean VP calculation
+function goldenMeanVP(margin: number, boards: number): [number, number] {
+  const Tau = (Math.sqrt(5) - 1) / 2;
+  const B = 15 * Math.sqrt(boards);
+  // Compute VP for all integer margins up to B, rounded
+  const vpArr: number[] = [];
+  for (let m = 0; m <= Math.ceil(B); m++) {
+    let vp = 10 + 10 * ((1 - Math.pow(Tau, 3 * m / B)) / (1 - Math.pow(Tau, 3)));
+    if (vp > 20) vp = 20;
+    vpArr.push(Math.round(vp * 100) / 100);
+  }
+  // Apply monotonicity fix up to 4 times
+  for (let iter = 0; iter < 4; iter++) {
+    for (let i = 1; i < vpArr.length - 1; i++) {
+      const prev = vpArr[i - 1], curr = vpArr[i], next = vpArr[i + 1];
+      if ((next - curr) > (curr - prev)) {
+        vpArr[i] = Math.round((curr + 0.01) * 100) / 100;
+      }
+    }
+  }
+  // Use the fixed value for the requested margin (rounded to nearest int)
+  let idx = Math.round(margin);
+  if (idx < 0) idx = 0;
+  if (idx > Math.ceil(B)) idx = Math.ceil(B);
+  let vpWinner = vpArr[idx];
+  let vpLoser = Math.round((20 - vpWinner) * 100) / 100;
+  // If sum is 19.99, add 0.01 to winner
+  if (Math.abs(vpWinner + vpLoser - 19.99) < 0.0001) {
+    vpWinner = Math.round((vpWinner + 0.01) * 100) / 100;
+    vpLoser = Math.round((20 - vpWinner) * 100) / 100;
+  }
+  return [vpWinner, vpLoser];
+}
 
 
 
 import { useEffect, useMemo, useState } from 'react'
-import { useState as useModalState } from 'react'
 import ScoreCard from '../ScoreCard'
 import { useScoring } from '../../hooks/useScoring'
 import { useTheme } from '../../hooks/useTheme'
@@ -34,8 +66,10 @@ const doubledOptions: Array<{ labelKey: 'doubled.undoubled'; value: Doubled }> =
 // Add state for board number and match tally
 
 export default function BoardEntry({ tournament, onBack }: Props) {
-      // Modal state for end-of-tournament popup
-      const [showEndPopup, setShowEndPopup] = useState(false);
+  // Modal state for end-of-tournament popup
+  const [showEndPopup, setShowEndPopup] = useState(false);
+  // Local state for boardsPerMatch to allow extension without mutating props
+  const [boardsPerMatch, setBoardsPerMatch] = useState(tournament.boardsPerMatch);
     // Helper: get board entry by number
     const getBoardEntry = (n: number) => {
       return boardResults.find((r: any) => r.board === n) || null;
@@ -61,11 +95,16 @@ export default function BoardEntry({ tournament, onBack }: Props) {
         const results = parsed[sectionId] || []
         if (results.length > 0) {
           const lastBoard = Math.max(...results.map((r: any) => r.board))
-          return lastBoard + 1
+          // If all boards are played, suggest last played board (n), else n+1
+          if (results.length >= tournament.boardsPerMatch) {
+            return lastBoard;
+          } else {
+            return lastBoard + 1;
+          }
         }
       } catch {}
     }
-    return 1
+    return 1;
   })
   const datumSchema = tournament.datumSchema
   const { isDark, toggleTheme } = useTheme()
@@ -135,11 +174,16 @@ export default function BoardEntry({ tournament, onBack }: Props) {
         setBoardResults(results)
         if (results.length > 0) {
           const lastBoard = Math.max(...results.map((r: any) => r.board))
-          setBoardNumber(lastBoard + 1)
+          // If all boards are played, suggest last played board (n), else n+1
+          if (results.length >= tournament.boardsPerMatch) {
+            setBoardNumber(lastBoard);
+          } else {
+            setBoardNumber(lastBoard + 1);
+          }
         }
       } catch {}
     }
-  }, [tournament.id, sectionId])
+  }, [tournament.id, sectionId, tournament.boardsPerMatch])
 
   // Save boardResults to localStorage whenever it changes
   useEffect(() => {
@@ -196,7 +240,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
     if (data) {
       setBoardResults((prev) => {
         // Remove any existing entry for this board number
-        const filtered = prev.filter(r => r.board !== boardNumber)
+        const filtered = prev.filter((r: any) => r.board !== boardNumber)
         const updated = [
           ...filtered,
           {
@@ -214,19 +258,29 @@ export default function BoardEntry({ tournament, onBack }: Props) {
         // Sort by board number ascending
         updated.sort((a, b) => a.board - b.board)
         // If all boards are played after this entry, show popup
-        if (updated.length === tournament.boardsPerMatch) {
+        if (updated.length === boardsPerMatch) {
           setShowEndPopup(true);
         }
         return updated
       })
 
-      // Find the lowest unplayed board number
-      const playedBoards = boardResults.map(r => r.board);
+      // Find the next unplayed board number (prefer next higher, else lowest)
+      const playedBoards = boardResults.map((r: any) => r.board);
       let nextBoard = null;
-      for (let i = 1; i <= tournament.boardsPerMatch; i++) {
-        if (!playedBoards.includes(i) && i !== boardNumber) {
+      // Try to find the next higher unplayed board
+      for (let i = boardNumber + 1; i <= boardsPerMatch; i++) {
+        if (!playedBoards.includes(i)) {
           nextBoard = i;
           break;
+        }
+      }
+      // If none higher, find the lowest unplayed board
+      if (nextBoard === null) {
+        for (let i = 1; i < boardNumber; i++) {
+          if (!playedBoards.includes(i)) {
+            nextBoard = i;
+            break;
+          }
         }
       }
       // If all boards are played, stay on current board
@@ -241,18 +295,17 @@ export default function BoardEntry({ tournament, onBack }: Props) {
         setDeclarer('N')
         setResult(0)
         setDoubled(null)
-        setManualHcp(20)
+        setManualHcp(20);
       }
     }
   }
   // Handler for extending tournament
   const handleExtendTournament = () => {
-    // Set boardsPerMatch to a very high number (simulate unlimited)
-    tournament.boardsPerMatch = 9999;
+    setBoardsPerMatch(9999);
     setShowEndPopup(false);
     // Find next unplayed board
     let next = 1;
-    while (boardResults.some(r => r.board === next)) next++;
+    while (boardResults.some((r: any) => r.board === next)) next++;
     setBoardNumber(next);
     setVulnerability(getBoardVulnerability(next));
     setContractLevel(1);
@@ -273,13 +326,11 @@ export default function BoardEntry({ tournament, onBack }: Props) {
     setShowEndPopup(false);
     onBack();
   };
-  // Calculate VP if defined
-  let vp = null;
-  if (tournament.vpTable && typeof tournament.vpTable === 'function') {
-    vp = tournament.vpTable(impTally, tournament.boardsPerMatch);
-  }
+  // Calculate VP using golden mean formula
+  const [vpNS, vpEW] = goldenMeanVP(Math.abs(impTally), boardsPerMatch);
+  const vpLabel = impTally >= 0 ? `${vpNS} - ${vpEW}` : `${vpEW} - ${vpNS}`;
 
-  const boardsLeft = tournament.boardsPerMatch - boardsPlayed
+  const boardsLeft = boardsPerMatch - boardsPlayed
 
   return (
     <div className="mx-auto w-full max-w-5xl p-3 pb-8 md:p-5">
@@ -289,9 +340,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
           <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-6 max-w-lg w-full">
             <h2 className="text-2xl font-bold mb-2">Tournament Complete</h2>
             <div className="mb-2">Total IMPs: <strong>{impTally}</strong></div>
-            {vp !== null && (
-              <div className="mb-2">Victory Points: <strong>{vp}</strong></div>
-            )}
+            <div className="mb-2">Victory Points: <strong>{vpLabel}</strong></div>
             <div className="mb-4">
               <h3 className="font-semibold mb-1">Results Table</h3>
               <table className="min-w-full border text-sm">
@@ -346,6 +395,9 @@ export default function BoardEntry({ tournament, onBack }: Props) {
             <strong>Total IMP:</strong> {impTally}
           </div>
           <div className="text-sm text-slate-700 dark:text-slate-200">
+            <strong>Victory Points:</strong> {vpLabel}
+          </div>
+          <div className="text-sm text-slate-700 dark:text-slate-200">
             <strong>Boards left:</strong> {boardsLeft}
           </div>
         </div>
@@ -397,7 +449,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
               <input
                 type="number"
                 min={1}
-                max={tournament.boardsPerMatch}
+                max={boardsPerMatch === 9999 ? undefined : boardsPerMatch}
                 className="ml-1 w-16 rounded border border-slate-300 p-1 text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
                 value={boardNumber === null ? '' : boardNumber}
                 onChange={e => {
@@ -405,7 +457,12 @@ export default function BoardEntry({ tournament, onBack }: Props) {
                   if (val === '') {
                     setBoardNumber(null as any); // allow empty
                   } else {
-                    const n = Math.max(1, Math.min(Number(val), tournament.boardsPerMatch));
+                    let n = Number(val);
+                    if (boardsPerMatch === 9999) {
+                      n = Math.max(1, n);
+                    } else {
+                      n = Math.max(1, Math.min(n, boardsPerMatch));
+                    }
                     setBoardNumber(n);
                   }
                 }}
