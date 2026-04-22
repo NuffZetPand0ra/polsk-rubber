@@ -1,9 +1,9 @@
 // Returns the vulnerability for a given board number (1-based, 1-32+)
-// Danish 16-board cycle:
-// Ingen: 1,8,11,14
-// Nord-Syd: 2,5,12,15
-// Øst-Vest: 3,6,9,16
-// Alle: 4,7,10,13
+// Official 16-board cycle:
+// None: 1,8,11,14
+// NS: 2,5,12,15
+// EW: 3,6,9,16
+// Both: 4,7,10,13
 import type { Vulnerability } from '../types'
 
 const VULN_16_PATTERN: Vulnerability[] = [
