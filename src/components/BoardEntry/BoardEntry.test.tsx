@@ -42,4 +42,26 @@ describe('BoardEntry', () => {
     expect(resultSelect).not.toHaveTextContent('-10')
     expect(resultSelect).not.toHaveTextContent('+6')
   })
+
+  it('toggles schema preview table', () => {
+    renderWithProviders()
+
+    expect(
+      screen.queryByText('Forhåndsvisning af score-skema (HCP → point)'),
+    ).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Vis datum-skema' }))
+
+    expect(
+      screen.getByText('Forhåndsvisning af score-skema (HCP → point)'),
+    ).toBeInTheDocument()
+    expect(screen.getByText('20')).toBeInTheDocument()
+    expect(screen.getByText('37')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Skjul datum-skema' }))
+
+    expect(
+      screen.queryByText('Forhåndsvisning af score-skema (HCP → point)'),
+    ).not.toBeInTheDocument()
+  })
 })

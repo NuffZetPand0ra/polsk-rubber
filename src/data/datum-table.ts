@@ -5,6 +5,12 @@ interface DatumRow {
   vul: number
 }
 
+export interface DatumPreviewRow {
+  hcp: number
+  nv: number
+  vul: number
+}
+
 const MODERN_TABLE: Record<number, DatumRow> = {
   20: { nv: 0, vul: 0 },
   21: { nv: 90, vul: 90 },
@@ -54,6 +60,20 @@ const TABLES: Record<DatumSchema, Record<number, DatumRow>> = {
 
 const MIN_HCP = 20
 const MAX_HCP = 37
+
+export function getDatumSchemaPreview(schema: DatumSchema = 'modern'): DatumPreviewRow[] {
+  const table = TABLES[schema]
+
+  return Array.from({ length: MAX_HCP - MIN_HCP + 1 }, (_, index) => {
+    const hcp = MIN_HCP + index
+    const row = table[hcp]
+    return {
+      hcp,
+      nv: row.nv,
+      vul: row.vul,
+    }
+  })
+}
 
 export function getDatum(
   hcp: number,

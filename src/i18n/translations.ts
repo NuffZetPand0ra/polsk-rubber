@@ -44,6 +44,12 @@ export type TranslationKey =
   | 'score.actualNs'
   | 'score.diff'
   | 'result.made'
+  | 'preview.button.show'
+  | 'preview.button.hide'
+  | 'preview.title'
+  | 'preview.hcp'
+  | 'preview.nv'
+  | 'preview.vul'
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   da: {
@@ -92,6 +98,12 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'score.actualNs': 'Faktisk score (NS)',
     'score.diff': 'Diff',
     'result.made': 'Vundet',
+    'preview.button.show': 'Vis datum-skema',
+    'preview.button.hide': 'Skjul datum-skema',
+    'preview.title': 'Forhåndsvisning af score-skema (HCP → point)',
+    'preview.hcp': 'HCP',
+    'preview.nv': 'Ikke sårbar',
+    'preview.vul': 'Sårbar',
   },
   en: {
     'app.badge': 'Polsk Rubber',
@@ -139,5 +151,11 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'score.actualNs': 'Actual Score (NS)',
     'score.diff': 'Diff',
     'result.made': 'Made',
+    'preview.button.show': 'Preview score schema',
+    'preview.button.hide': 'Hide score schema',
+    'preview.title': 'Score schema preview (HCP to points)',
+    'preview.hcp': 'HCP',
+    'preview.nv': 'Not Vulnerable',
+    'preview.vul': 'Vulnerable',
   },
 }

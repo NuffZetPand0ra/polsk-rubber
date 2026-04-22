@@ -4,6 +4,7 @@ import { useTournamentStore } from '../../store/tournament'
 import { useScoring } from '../../hooks/useScoring'
 import { useTheme } from '../../hooks/useTheme'
 import { useI18n } from '../../i18n/I18nProvider'
+import { getDatumSchemaPreview } from '../../data/datum-table'
 import type { Doubled, Vulnerability } from '../../types'
 
 const vulnerabilityOptions: Vulnerability[] = ['None', 'NS', 'EW', 'Both']
@@ -33,6 +34,7 @@ export default function BoardEntry() {
   const [vulnerability, setVulnerability] = useState<Vulnerability>('None')
   const [doubled, setDoubled] = useState<Doubled>(null)
   const [manualHcp, setManualHcp] = useState(24)
+  const [showSchemaPreview, setShowSchemaPreview] = useState(false)
 
   const contract = `${contractLevel}${contractSuit}`
   const maxOverTricks = 7 - contractLevel
@@ -45,6 +47,11 @@ export default function BoardEntry() {
         (_, index) => index - maxUnderTricks,
       ),
     [maxOverTricks, maxUnderTricks],
+  )
+
+  const schemaPreviewRows = useMemo(
+    () => getDatumSchemaPreview(datumSchema),
+    [datumSchema],
   )
 
   useEffect(() => {
@@ -256,6 +263,44 @@ export default function BoardEntry() {
                 onChange={(event) => setManualHcp(Number(event.target.value))}
               />
             </label>
+          </div>
+
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={() => setShowSchemaPreview((value) => !value)}
+              className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+            >
+              {showSchemaPreview ? t('preview.button.hide') : t('preview.button.show')}
+            </button>
+
+            {showSchemaPreview ? (
+              <div className="mt-3 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700">
+                <p className="border-b border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                  {t('preview.title')}
+                </p>
+                <div className="max-h-64 overflow-y-auto">
+                  <table className="w-full text-sm">
+                    <thead className="sticky top-0 bg-white dark:bg-slate-900">
+                      <tr className="text-left text-xs uppercase tracking-wide text-slate-600 dark:text-slate-300">
+                        <th className="px-3 py-2">{t('preview.hcp')}</th>
+                        <th className="px-3 py-2">{t('preview.nv')}</th>
+                        <th className="px-3 py-2">{t('preview.vul')}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {schemaPreviewRows.map((row) => (
+                        <tr key={row.hcp} className="border-t border-slate-100 text-slate-700 dark:border-slate-800 dark:text-slate-200">
+                          <td className="px-3 py-1.5 font-medium">{row.hcp}</td>
+                          <td className="px-3 py-1.5">{row.nv}</td>
+                          <td className="px-3 py-1.5">{row.vul}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : null}
           </div>
 
           {errorText ? (
