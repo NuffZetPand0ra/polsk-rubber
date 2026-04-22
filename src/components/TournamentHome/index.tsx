@@ -4,13 +4,15 @@ import { useTheme } from '../../hooks/useTheme'
 import { useI18n } from '../../i18n/I18nProvider'
 import type { DatumSchema, MatchFormat, Tournament } from '../../types'
 
-const BOARDS_OPTIONS = [8, 10, 12, 16, 20, 24] as const
+const BOARDS_OPTIONS = [8, 10, 12, 16, 20, 24, 28, 32] as const
 
 interface Props {
   onOpen: (tournament: Tournament) => void
+  justPlay?: () => void
 }
 
-export default function TournamentHome({ onOpen }: Props) {
+export default function TournamentHome(props: Props) {
+  const { onOpen, justPlay } = props
   const { tournaments, createTournament, deleteTournament } = useTournamentStore()
   const { isDark, toggleTheme } = useTheme()
   const { language, setLanguage, t } = useI18n()
@@ -44,9 +46,21 @@ export default function TournamentHome({ onOpen }: Props) {
 
   const selectClass = inputClass
 
+  // Remove local justPlay state, use prop instead
   return (
     <div className="mx-auto w-full max-w-2xl p-3 pb-8 md:p-5">
       <header className="mb-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-6">
+        <div className="mb-3 flex justify-end">
+          {justPlay && (
+            <button
+              type="button"
+              onClick={justPlay}
+              className="inline-flex items-center rounded-lg border border-green-300 bg-green-50 px-4 py-2 text-sm font-semibold text-green-700 shadow-sm hover:bg-green-100 dark:border-green-700 dark:bg-green-900/20 dark:text-green-200 dark:hover:bg-green-900/30"
+            >
+              🎲 Just Play
+            </button>
+          )}
+        </div>
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">

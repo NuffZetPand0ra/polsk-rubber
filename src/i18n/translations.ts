@@ -125,7 +125,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'tournament.namePlaceholder': 'Fx Klubmesterskab 2026',
     'tournament.boardsPerMatch': 'Spil pr. kamp',
     'tournament.matchFormat': 'Kampformat',
-    'tournament.format.vp': 'Sejrspunkter (VP)',
+    'tournament.format.vp': 'Kamppoint (VP)',
     'tournament.format.carryOver': 'Carry-over IMP',
     'tournament.create': 'Opret turnering',
     'tournament.cancel': 'Annuller',

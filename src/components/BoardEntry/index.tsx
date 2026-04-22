@@ -5,6 +5,7 @@ import { useTheme } from '../../hooks/useTheme'
 import { useI18n } from '../../i18n/I18nProvider'
 import { getDatumSchemaPreview } from '../../data/datum-table'
 import type { Doubled, Tournament, Vulnerability } from '../../types'
+import { getBoardVulnerability } from '../../utils/boardVul'
 
 interface Props {
   tournament: Tournament
@@ -26,16 +27,21 @@ const doubledOptions: Array<{ labelKey: 'doubled.undoubled'; value: Doubled }> =
   { labelKey: 'doubled.undoubled', value: null },
 ]
 
+// Add state for board number and match tally
 export default function BoardEntry({ tournament, onBack }: Props) {
+  const [boardNumber, setBoardNumber] = useState(1)
+  const [impTally, setImpTally] = useState(0)
+  const [boardsPlayed, setBoardsPlayed] = useState(0)
+  const [boardResults, setBoardResults] = useState<any[]>([])
   const datumSchema = tournament.datumSchema
   const { isDark, toggleTheme } = useTheme()
   const { language, setLanguage, t } = useI18n()
 
-  const [contractLevel, setContractLevel] = useState<number>(4)
-  const [contractSuit, setContractSuit] = useState<(typeof contractSuits)[number]>('H')
+  const [contractLevel, setContractLevel] = useState<number>(1)
+  const [contractSuit, setContractSuit] = useState<(typeof contractSuits)[number]>('C')
   const [declarer, setDeclarer] = useState<'N' | 'E' | 'S' | 'W'>('N')
   const [result, setResult] = useState(0)
-  const [vulnerability, setVulnerability] = useState<Vulnerability>('None')
+  const [vulnerability, setVulnerability] = useState<Vulnerability>(getBoardVulnerability(1))
   const [doubled, setDoubled] = useState<Doubled>(null)
   const [manualHcp, setManualHcp] = useState(24)
   const [showSchemaPreview, setShowSchemaPreview] = useState(false)
@@ -101,9 +107,55 @@ export default function BoardEntry({ tournament, onBack }: Props) {
         ? `${t('error.scoringFailed')} ${errorMessage ?? ''}`.trim()
         : null
 
+  // Handler for submitting a board result and updating tally
+  const handleSubmitBoard = () => {
+    if (data) {
+      setImpTally((prev) => prev + data.imp)
+      setBoardsPlayed((prev) => prev + 1)
+      setBoardNumber((prev) => {
+        const next = prev + 1
+        setVulnerability(getBoardVulnerability(next))
+        return next
+      })
+      setBoardResults((prev) => [
+        ...prev,
+        {
+          board: boardNumber,
+          contract,
+          declarer,
+          result,
+          vulnerability,
+          doubled,
+          // Always show IMP from declarer's side in table
+          imp: (declarer === 'N' || declarer === 'S') ? data.imp : -data.imp,
+        },
+      ])
+      // Reset entry fields for next board
+      setContractLevel(1)
+      setContractSuit('C')
+      setDeclarer('N')
+      setResult(0)
+      setDoubled(null)
+      setManualHcp(24)
+    }
+  }
+
+  const boardsLeft = tournament.boardsPerMatch - boardsPlayed
+
   return (
     <div className="mx-auto w-full max-w-5xl p-3 pb-8 md:p-5">
       <header className="mb-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-6">
+        <div className="flex gap-4 mb-2">
+          <div className="text-sm text-slate-700 dark:text-slate-200">
+            <strong>{t('section.boardEntry')}</strong> — Board {boardNumber}
+          </div>
+          <div className="text-sm text-slate-700 dark:text-slate-200">
+            <strong>Total IMP:</strong> {impTally}
+          </div>
+          <div className="text-sm text-slate-700 dark:text-slate-200">
+            <strong>Boards left:</strong> {boardsLeft}
+          </div>
+        </div>
         <div className="flex items-start justify-between gap-3">
           <div>
             <button
@@ -146,6 +198,72 @@ export default function BoardEntry({ tournament, onBack }: Props) {
       <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr] lg:items-start">
         <section className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-5">
           <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 md:text-2xl">{t('section.boardEntry')}</h2>
+          <div className="mt-2 flex gap-2 items-center">
+            <label className="text-sm text-slate-700 dark:text-slate-200">
+              Board #
+              <input
+                type="number"
+                min={1}
+                max={tournament.boardsPerMatch}
+                className="ml-1 w-16 rounded border border-slate-300 p-1 text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                value={boardNumber}
+                onChange={e => {
+                  const n = Math.max(1, Math.min(Number(e.target.value), tournament.boardsPerMatch))
+                  setBoardNumber(n)
+                  setVulnerability(getBoardVulnerability(n))
+                }}
+              />
+            </label>
+            <span className="text-xs text-slate-500">(Vul: {vulnerability})</span>
+          </div>
+          <div className="mt-2">
+            <button
+              type="button"
+              className="rounded bg-blue-600 text-white px-4 py-2 font-semibold hover:bg-blue-700"
+              onClick={handleSubmitBoard}
+              disabled={!data}
+            >
+              Enter Board Result
+            </button>
+          </div>
+
+          {boardResults.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-2">Board Results</h3>
+              <table className="min-w-full border text-sm">
+                <thead>
+                  <tr className="bg-slate-100 dark:bg-slate-800">
+                    <th className="border px-2 py-1">#</th>
+                    <th className="border px-2 py-1">Contract</th>
+                    <th className="border px-2 py-1">Declarer</th>
+                    <th className="border px-2 py-1">Result</th>
+                    <th className="border px-2 py-1">Vul</th>
+                    <th className="border px-2 py-1">Dbl</th>
+                    <th className="border px-2 py-1">IMP</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {boardResults.map((r) => (
+                    <tr key={r.board}>
+                      <td className="border px-2 py-1">{r.board}</td>
+                      <td className="border px-2 py-1">{r.contract}</td>
+                      <td className="border px-2 py-1">{r.declarer}</td>
+                      <td className="border px-2 py-1">{r.result}</td>
+                      <td className="border px-2 py-1">{r.vulnerability}</td>
+                      <td className="border px-2 py-1">{r.doubled || '-'}</td>
+                      <td className="border px-2 py-1">{r.imp}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="bg-slate-200 dark:bg-slate-900 font-bold">
+                    <td className="border px-2 py-1 text-right" colSpan={6}>Total IMP</td>
+                    <td className="border px-2 py-1">{boardResults.reduce((sum, r) => sum + r.imp, 0)}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
 
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <p className="text-xs text-slate-500 dark:text-slate-400 md:col-span-2">
