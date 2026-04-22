@@ -16,7 +16,7 @@ describe('BoardEntry', () => {
     renderWithProviders()
 
     expect(screen.getByText('Board resultat')).toBeInTheDocument()
-    expect(screen.getByText('+3')).toBeInTheDocument()
+    expect(screen.getByText('+3', { selector: 'p' })).toBeInTheDocument()
   })
 
   it('shows validation error for invalid HCP', () => {
@@ -28,5 +28,18 @@ describe('BoardEntry', () => {
     expect(
       screen.getByText('Melder-HCP skal være et heltal mellem 0 og 40.'),
     ).toBeInTheDocument()
+  })
+
+  it('limits result choices by contract level', () => {
+    renderWithProviders()
+
+    const levelSelect = screen.getByLabelText('Kontrakttrin')
+    fireEvent.change(levelSelect, { target: { value: '2' } })
+
+    const resultSelect = screen.getByLabelText('Resultat (i forhold til kontrakt)')
+    expect(resultSelect).toHaveTextContent('-8')
+    expect(resultSelect).toHaveTextContent('+5')
+    expect(resultSelect).not.toHaveTextContent('-10')
+    expect(resultSelect).not.toHaveTextContent('+6')
   })
 })

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import ScoreCard from '../ScoreCard'
 import { useTournamentStore } from '../../store/tournament'
 import { useScoring } from '../../hooks/useScoring'
@@ -7,6 +7,16 @@ import { useI18n } from '../../i18n/I18nProvider'
 import type { Doubled, Vulnerability } from '../../types'
 
 const vulnerabilityOptions: Vulnerability[] = ['None', 'NS', 'EW', 'Both']
+const contractLevels = [1, 2, 3, 4, 5, 6, 7] as const
+const contractSuits = ['C', 'D', 'H', 'S', 'NT'] as const
+const contractSuitLabels: Record<(typeof contractSuits)[number], string> = {
+  C: '♣',
+  D: '♦',
+  H: '♥',
+  S: '♠',
+  NT: 'NT',
+}
+
 const doubledOptions: Array<{ labelKey: 'doubled.undoubled'; value: Doubled }> = [
   { labelKey: 'doubled.undoubled', value: null },
 ]
@@ -16,12 +26,32 @@ export default function BoardEntry() {
   const { isDark, toggleTheme } = useTheme()
   const { language, setLanguage, t } = useI18n()
 
-  const [contract, setContract] = useState('4H')
+  const [contractLevel, setContractLevel] = useState<number>(4)
+  const [contractSuit, setContractSuit] = useState<(typeof contractSuits)[number]>('H')
   const [declarer, setDeclarer] = useState<'N' | 'E' | 'S' | 'W'>('N')
   const [result, setResult] = useState(0)
   const [vulnerability, setVulnerability] = useState<Vulnerability>('None')
   const [doubled, setDoubled] = useState<Doubled>(null)
   const [manualHcp, setManualHcp] = useState(24)
+
+  const contract = `${contractLevel}${contractSuit}`
+  const maxOverTricks = 7 - contractLevel
+  const maxUnderTricks = contractLevel + 6
+
+  const resultOptions = useMemo(
+    () =>
+      Array.from(
+        { length: maxOverTricks + maxUnderTricks + 1 },
+        (_, index) => index - maxUnderTricks,
+      ),
+    [maxOverTricks, maxUnderTricks],
+  )
+
+  useEffect(() => {
+    if (result < -maxUnderTricks || result > maxOverTricks) {
+      setResult(0)
+    }
+  }, [maxOverTricks, maxUnderTricks, result])
 
   const scoringInput = useMemo(
     () => ({
@@ -33,7 +63,15 @@ export default function BoardEntry() {
       schema: datumSchema,
       manualDeclaringHcp: manualHcp,
     }),
-    [contract, declarer, result, vulnerability, doubled, datumSchema, manualHcp],
+    [
+      contract,
+      declarer,
+      result,
+      vulnerability,
+      doubled,
+      datumSchema,
+      manualHcp,
+    ],
   )
 
   const { data, errorKey, errorMessage } = useScoring(scoringInput)
@@ -105,12 +143,33 @@ export default function BoardEntry() {
             </label>
 
             <label className="text-sm text-slate-700 dark:text-slate-200">
-              {t('field.contract')}
-              <input
+              {t('field.contractLevel')}
+              <select
                 className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2.5 text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-blue-900"
-                value={contract}
-                onChange={(event) => setContract(event.target.value.toUpperCase())}
-              />
+                value={contractLevel}
+                onChange={(event) => setContractLevel(Number(event.target.value))}
+              >
+                {contractLevels.map((level) => (
+                  <option key={level} value={level}>{level}</option>
+                ))}
+              </select>
+            </label>
+
+            <label className="text-sm text-slate-700 dark:text-slate-200">
+              {t('field.contractSuit')}
+              <select
+                className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2.5 text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-blue-900"
+                value={contractSuit}
+                onChange={(event) =>
+                  setContractSuit(
+                    event.target.value as (typeof contractSuits)[number],
+                  )
+                }
+              >
+                {contractSuits.map((suit) => (
+                  <option key={suit} value={suit}>{contractSuitLabels[suit]}</option>
+                ))}
+              </select>
             </label>
 
             <label className="text-sm text-slate-700 dark:text-slate-200">
@@ -129,12 +188,30 @@ export default function BoardEntry() {
 
             <label className="text-sm text-slate-700 dark:text-slate-200">
               {t('field.result')}
-              <input
-                type="number"
-                className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2.5 text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-blue-900"
+              <select
+                className={`mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2.5 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-800 dark:focus:ring-blue-900 ${
+                  result < 0
+                    ? 'text-red-600 dark:text-red-400'
+                    : result > 0
+                      ? 'text-emerald-600 dark:text-emerald-400'
+                      : 'text-slate-900 dark:text-slate-100'
+                }`}
                 value={result}
                 onChange={(event) => setResult(Number(event.target.value))}
-              />
+              >
+                {resultOptions.map((value) => (
+                  <option
+                    key={value}
+                    value={value}
+                    style={{
+                      color:
+                        value < 0 ? '#dc2626' : value > 0 ? '#16a34a' : '#0f172a',
+                    }}
+                  >
+                    {value === 0 ? t('result.made') : value > 0 ? `+${value}` : `${value}`}
+                  </option>
+                ))}
+              </select>
             </label>
 
             <label className="text-sm text-slate-700 dark:text-slate-200">

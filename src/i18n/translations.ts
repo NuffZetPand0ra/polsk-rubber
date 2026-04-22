@@ -16,6 +16,8 @@ export type TranslationKey =
   | 'schema.modern'
   | 'schema.classic'
   | 'field.contract'
+  | 'field.contractLevel'
+  | 'field.contractSuit'
   | 'field.declarer'
   | 'field.result'
   | 'field.vulnerability'
@@ -41,6 +43,7 @@ export type TranslationKey =
   | 'score.datum'
   | 'score.actualNs'
   | 'score.diff'
+  | 'result.made'
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   da: {
@@ -61,6 +64,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'schema.modern': 'Moderne',
     'schema.classic': 'Klassisk',
     'field.contract': 'Kontrakt (fx 4H, 3NT)',
+    'field.contractLevel': 'Kontrakttrin',
+    'field.contractSuit': 'Kontraktfarve',
     'field.declarer': 'Melder',
     'field.result': 'Resultat (i forhold til kontrakt)',
     'field.vulnerability': 'Sårbarhed',
@@ -72,7 +77,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'seat.west': 'Vest',
     'vul.none': 'Ingen',
     'vul.ns': 'NS',
-    'vul.ew': 'OV',
+    'vul.ew': 'ØV',
     'vul.both': 'Begge',
     'doubled.undoubled': 'Uden dobling',
     'error.invalidHcp': 'Melder-HCP skal være et heltal mellem 0 og 40.',
@@ -86,6 +91,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'score.datum': 'Datum (rå/afrundet)',
     'score.actualNs': 'Faktisk score (NS)',
     'score.diff': 'Diff',
+    'result.made': 'Vundet',
   },
   en: {
     'app.badge': 'Polsk Rubber',
@@ -105,6 +111,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'schema.modern': 'Modern',
     'schema.classic': 'Classic',
     'field.contract': 'Contract (e.g. 4H, 3NT)',
+    'field.contractLevel': 'Contract Level',
+    'field.contractSuit': 'Contract Suit',
     'field.declarer': 'Declarer',
     'field.result': 'Result (relative to contract)',
     'field.vulnerability': 'Vulnerability',
@@ -130,5 +138,6 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'score.datum': 'Datum (raw/rounded)',
     'score.actualNs': 'Actual Score (NS)',
     'score.diff': 'Diff',
+    'result.made': 'Made',
   },
 }
