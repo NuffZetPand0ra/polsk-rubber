@@ -37,20 +37,35 @@ export function useScoring(input: UseScoringInput): {
     }
 
     try {
-      const datumRaw = getDatumForBoard(
+
+      let datumRaw = getDatumForBoard(
         declaringHcp,
         input.vulnerability,
         declaringSide,
         input.schema,
       )
 
-      const actualScore = computeActualScore(
+      let actualScore = computeActualScore(
         input.contract,
         input.result,
         input.vulnerability,
         input.doubled,
         declaringSide,
       )
+
+      // If declaring side has <20 HCP, compute datum for the other side and flip perspective
+      if (declaringHcp < 20) {
+        const otherSide = declaringSide === 'NS' ? 'EW' : 'NS'
+        const otherHcp = 40 - declaringHcp
+        datumRaw = getDatumForBoard(
+          otherHcp,
+          input.vulnerability,
+          otherSide,
+          input.schema,
+        )
+        datumRaw = -datumRaw // Flip to NS perspective
+        actualScore = -actualScore // Flip to NS perspective
+      }
 
       const { datumRounded, diff, imp } = scoreBoard(actualScore, datumRaw)
 

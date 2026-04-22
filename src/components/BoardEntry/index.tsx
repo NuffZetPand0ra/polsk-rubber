@@ -126,8 +126,9 @@ export default function BoardEntry({ tournament, onBack }: Props) {
           result,
           vulnerability,
           doubled,
-          // Always show IMP from NS perspective (matches datum/score logic)
           imp: data.imp,
+          hcp: data.declaringHcp,
+          actualScore: data.actualScore,
         },
       ])
       // Reset entry fields for next board
@@ -246,9 +247,9 @@ export default function BoardEntry({ tournament, onBack }: Props) {
                   {boardResults.map((r) => (
                     <tr key={r.board}>
                       <td className="border px-2 py-1">{r.board}</td>
-                      <td className="border px-2 py-1">{r.contract}</td>
+                      <td className="border px-2 py-1">{r.contract} ({r.hcp}HCP)</td>
                       <td className="border px-2 py-1">{r.declarer}</td>
-                      <td className="border px-2 py-1">{r.result}</td>
+                      <td className="border px-2 py-1">{r.result} ({r.actualScore >= 0 ? '+' : ''}{r.actualScore})</td>
                       <td className="border px-2 py-1">{r.vulnerability}</td>
                       <td className="border px-2 py-1">{r.doubled || '-'}</td>
                       <td className="border px-2 py-1">{r.imp}</td>
