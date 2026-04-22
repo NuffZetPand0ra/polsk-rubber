@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import ScoreCard from '../ScoreCard'
 import { useScoring } from '../../hooks/useScoring'
 import { useTheme } from '../../hooks/useTheme'
@@ -32,6 +32,8 @@ export default function BoardEntry({ tournament, onBack }: Props) {
   const [boardNumber, setBoardNumber] = useState(1)
   const [impTally, setImpTally] = useState(0)
   const [boardsPlayed, setBoardsPlayed] = useState(0)
+  // Prepare for sections: results are stored as { [tournamentId]: { [sectionId]: BoardResult[] } }
+  const sectionId = 'main' // Placeholder for future section support
   const [boardResults, setBoardResults] = useState<any[]>([])
   const datumSchema = tournament.datumSchema
   const { isDark, toggleTheme } = useTheme()
@@ -63,6 +65,26 @@ export default function BoardEntry({ tournament, onBack }: Props) {
     () => getDatumSchemaPreview(datumSchema),
     [datumSchema],
   )
+
+
+  // Load boardResults from localStorage on mount
+  useEffect(() => {
+    const key = `boardResults:${tournament.id}`
+    const stored = localStorage.getItem(key)
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored)
+        setBoardResults(parsed[sectionId] || [])
+      } catch {}
+    }
+  }, [tournament.id])
+
+  // Save boardResults to localStorage whenever it changes
+  useEffect(() => {
+    const key = `boardResults:${tournament.id}`
+    const toStore = { [sectionId]: boardResults }
+    localStorage.setItem(key, JSON.stringify(toStore))
+  }, [boardResults, tournament.id])
 
   useEffect(() => {
     if (result < -maxUnderTricks || result > maxOverTricks) {

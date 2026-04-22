@@ -64,7 +64,7 @@ export function useScoring(input: UseScoringInput): {
           input.schema,
         )
         datumRaw = -datumRaw // Flip to NS perspective
-        actualScore = -actualScore // Flip to NS perspective
+        // Do NOT flip actualScore; it should always be from NS perspective
       }
 
       const { datumRounded, diff, imp } = scoreBoard(actualScore, datumRaw)
