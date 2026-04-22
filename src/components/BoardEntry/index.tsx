@@ -1,7 +1,7 @@
 
 
 
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import ScoreCard from '../ScoreCard'
 import { useScoring } from '../../hooks/useScoring'
 import { useTheme } from '../../hooks/useTheme'
@@ -33,6 +33,10 @@ const doubledOptions: Array<{ labelKey: 'doubled.undoubled'; value: Doubled }> =
 // Add state for board number and match tally
 
 export default function BoardEntry({ tournament, onBack }: Props) {
+    // Helper: get board entry by number
+    const getBoardEntry = (n: number) => {
+      return boardResults.find((r: any) => r.board === n) || null;
+    };
   const sectionId = 'main' // Placeholder for future section support
   const [boardResults, setBoardResults] = useState<any[]>(() => {
     const key = `boardResults:${tournament.id}`
@@ -53,7 +57,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
         const parsed = JSON.parse(stored)
         const results = parsed[sectionId] || []
         if (results.length > 0) {
-          const lastBoard = Math.max(...results.map(r => r.board))
+          const lastBoard = Math.max(...results.map((r: any) => r.board))
           return lastBoard + 1
         }
       } catch {}
@@ -66,7 +70,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
 
   // Derived values for tally and boards played
   const boardsPlayed = boardResults.length
-  const impTally = boardResults.reduce((sum, r) => sum + r.imp, 0)
+  const impTally = boardResults.reduce((sum: number, r: any) => sum + r.imp, 0)
 
   const [contractLevel, setContractLevel] = useState<number>(1)
   const [contractSuit, setContractSuit] = useState<(typeof contractSuits)[number]>('C')
@@ -75,6 +79,27 @@ export default function BoardEntry({ tournament, onBack }: Props) {
   const [vulnerability, setVulnerability] = useState<Vulnerability>(getBoardVulnerability(1))
   const [doubled, setDoubled] = useState<Doubled>(null)
   const [manualHcp, setManualHcp] = useState(20)
+    // When boardNumber changes, prefill all inputs from boardResults/localStorage
+    useEffect(() => {
+      const entry = getBoardEntry(boardNumber);
+      if (entry) {
+        setContractLevel(Number(entry.contract[0]) || 1);
+        setContractSuit(entry.contract.slice(1) || 'C');
+        setDeclarer(entry.declarer || 'N');
+        setResult(entry.result ?? 0);
+        setVulnerability(entry.vulnerability || getBoardVulnerability(boardNumber));
+        setDoubled(entry.doubled ?? null);
+        setManualHcp(entry.hcp ?? 20);
+      } else {
+        setContractLevel(1);
+        setContractSuit('C');
+        setDeclarer('N');
+        setResult(0);
+        setVulnerability(getBoardVulnerability(boardNumber));
+        setDoubled(null);
+        setManualHcp(20);
+      }
+    }, [boardNumber, boardResults]);
   const [showSchemaPreview, setShowSchemaPreview] = useState(false)
 
   const contract = `${contractLevel}${contractSuit}`
@@ -106,7 +131,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
         const results = parsed[sectionId] || []
         setBoardResults(results)
         if (results.length > 0) {
-          const lastBoard = Math.max(...results.map(r => r.board))
+          const lastBoard = Math.max(...results.map((r: any) => r.board))
           setBoardNumber(lastBoard + 1)
         }
       } catch {}
@@ -184,7 +209,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
             vulnerability,
             doubled,
             imp: data.imp,
-            hcp: data.declaringHcp,
+            hcp: manualHcp, // Always store N/S HCP input
             actualScore: data.actualScore,
           },
         ]
@@ -272,7 +297,6 @@ export default function BoardEntry({ tournament, onBack }: Props) {
                 onChange={e => {
                   const n = Math.max(1, Math.min(Number(e.target.value), tournament.boardsPerMatch))
                   setBoardNumber(n)
-                  setVulnerability(getBoardVulnerability(n))
                 }}
               />
             </label>
@@ -296,6 +320,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
                 <thead>
                   <tr className="bg-slate-100 dark:bg-slate-800">
                     <th className="border px-2 py-1">#</th>
+                    <th className="border px-2 py-1">N/S HCP</th>
                     <th className="border px-2 py-1">Contract</th>
                     <th className="border px-2 py-1">Declarer</th>
                     <th className="border px-2 py-1">Result</th>
@@ -305,10 +330,11 @@ export default function BoardEntry({ tournament, onBack }: Props) {
                   </tr>
                 </thead>
                 <tbody>
-                  {boardResults.map((r) => (
+                  {boardResults.map((r: any) => (
                     <tr key={r.board}>
                       <td className="border px-2 py-1">{r.board}</td>
-                      <td className="border px-2 py-1">{r.contract} ({r.hcp}HCP)</td>
+                      <td className="border px-2 py-1">{r.hcp}</td>
+                      <td className="border px-2 py-1">{r.contract}</td>
                       <td className="border px-2 py-1">{r.declarer}</td>
                       <td className="border px-2 py-1">{r.result} ({r.actualScore >= 0 ? '+' : ''}{r.actualScore})</td>
                       <td className="border px-2 py-1">{r.vulnerability}</td>
@@ -319,7 +345,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
                 </tbody>
                 <tfoot>
                   <tr className="bg-slate-200 dark:bg-slate-900 font-bold">
-                    <td className="border px-2 py-1 text-right" colSpan={6}>Total IMP</td>
+                    <td className="border px-2 py-1 text-right" colSpan={7}>Total IMP</td>
                     <td className="border px-2 py-1">{boardResults.reduce((sum, r) => sum + r.imp, 0)}</td>
                   </tr>
                 </tfoot>
@@ -438,6 +464,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
             <label className="text-sm text-slate-700 dark:text-slate-200 md:col-span-2">
               {t('field.manualHcp')}
               <input
+                data-testid="hcp-input"
                 type="number"
                 min={0}
                 max={40}
@@ -487,7 +514,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
           </div>
 
           {errorText ? (
-            <p className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{errorText}</p>
+            <p data-testid="hcp-error" className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{errorText}</p>
           ) : null}
         </section>
 
