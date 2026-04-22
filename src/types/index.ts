@@ -115,6 +115,8 @@ export interface Tournament {
   matchFormat: MatchFormat
   datumSchema: DatumSchema
   createdAt: string
+  players: Player[]
+  sessions: Session[]
 }
 
 // ...existing code...
