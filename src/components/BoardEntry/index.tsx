@@ -126,8 +126,8 @@ export default function BoardEntry({ tournament, onBack }: Props) {
           result,
           vulnerability,
           doubled,
-          // Always show IMP from declarer's side in table
-          imp: (declarer === 'N' || declarer === 'S') ? data.imp : -data.imp,
+          // Always show IMP from NS perspective (matches datum/score logic)
+          imp: data.imp,
         },
       ])
       // Reset entry fields for next board
@@ -251,7 +251,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
                       <td className="border px-2 py-1">{r.result}</td>
                       <td className="border px-2 py-1">{r.vulnerability}</td>
                       <td className="border px-2 py-1">{r.doubled || '-'}</td>
-                      <td className="border px-2 py-1">{r.imp}</td>
+                      <td className="border px-2 py-1">{(r.declarer === 'N' || r.declarer === 'S') ? r.imp : -r.imp}</td>
                     </tr>
                   ))}
                 </tbody>
