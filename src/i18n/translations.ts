@@ -76,7 +76,7 @@ export type TranslationKey =
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   da: {
     'app.badge': 'Polsk Rubber',
-    'app.heading': 'Board Scoring',
+    'app.heading': 'Spilscoring',
     'app.intro':
       'Indtast kontrakt, sårbarhed og doblinger, og sammenlign faktisk resultat med HCP-datum i IMP.',
     'app.offlineNote':
@@ -86,8 +86,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'steps.three': 'Datum, diff, IMP.',
     'theme.light': 'Lys tilstand',
     'theme.dark': 'Mørk tilstand',
-    'section.boardEntry': 'Board indtastning',
-    'section.boardResult': 'Board resultat',
+    'section.boardEntry': 'Spilindtastning',
+    'section.boardResult': 'Spilresultat',
     'schema.label': 'Datum-skema',
     'schema.modern': 'Moderne',
     'schema.classic': 'Klassisk',
@@ -127,12 +127,12 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'preview.nv': 'Ikke sårbar',
     'preview.vul': 'Sårbar',
     'scan.section': 'Handscan (kamera)',
-    'scan.boardNumber': 'Boardnummer',
+    'scan.boardNumber': 'Spilnummer',
     'scan.startCamera': 'Start kamera',
     'scan.stopCamera': 'Stop kamera',
     'scan.capture': 'Tag billede og scan',
     'scan.cameraUnsupported': 'Kamera er ikke understøttet i denne browser.',
-    'scan.cameraReady': 'Kamera er aktivt. Placer board-mappen og tryk scan.',
+    'scan.cameraReady': 'Kamera er aktivt. Placer spilmappen og tryk scan.',
     'scan.inferenceTitle': 'Scan-resultat',
     'scan.confidence': 'Sikkerhed',
     'scan.notes': 'Noter',

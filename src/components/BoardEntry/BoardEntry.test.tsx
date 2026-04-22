@@ -15,7 +15,7 @@ describe('BoardEntry', () => {
   it('renders a scored board using defaults', () => {
     renderWithProviders()
 
-    expect(screen.getByText('Board resultat')).toBeInTheDocument()
+    expect(screen.getByText('Spilresultat')).toBeInTheDocument()
     expect(screen.getByText('+3', { selector: 'p' })).toBeInTheDocument()
   })
 
