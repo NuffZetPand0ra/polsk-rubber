@@ -26,5 +26,6 @@ export function getDatumForBoard(
   side: Side,
   schema: DatumSchema,
 ): number {
-  return getDatum(hcp, isSideVulnerable(vulnerability, side), schema)
+  const datum = getDatum(hcp, isSideVulnerable(vulnerability, side), schema)
+  return side === 'NS' ? datum : -datum // Normalize to NS perspective
 }

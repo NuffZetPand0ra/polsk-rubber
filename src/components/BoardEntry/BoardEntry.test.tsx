@@ -26,7 +26,7 @@ describe('BoardEntry', () => {
     renderWithProviders()
 
     expect(screen.getByText('Spilresultat')).toBeInTheDocument()
-    expect(screen.getByText('+3', { selector: 'p' })).toBeInTheDocument()
+    expect(screen.getByText('-6', { selector: 'p' })).toBeInTheDocument()
   })
 
   it('shows validation error for invalid HCP', () => {

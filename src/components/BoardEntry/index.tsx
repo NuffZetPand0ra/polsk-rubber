@@ -251,7 +251,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
                       <td className="border px-2 py-1">{r.result}</td>
                       <td className="border px-2 py-1">{r.vulnerability}</td>
                       <td className="border px-2 py-1">{r.doubled || '-'}</td>
-                      <td className="border px-2 py-1">{(r.declarer === 'N' || r.declarer === 'S') ? r.imp : -r.imp}</td>
+                      <td className="border px-2 py-1">{r.imp}</td>
                     </tr>
                   ))}
                 </tbody>
