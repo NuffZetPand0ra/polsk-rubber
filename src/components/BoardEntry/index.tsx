@@ -1,3 +1,6 @@
+
+
+
 import { useEffect, useMemo, useState, useCallback } from 'react'
 import ScoreCard from '../ScoreCard'
 import { useScoring } from '../../hooks/useScoring'
@@ -28,6 +31,7 @@ const doubledOptions: Array<{ labelKey: 'doubled.undoubled'; value: Doubled }> =
 ]
 
 // Add state for board number and match tally
+
 export default function BoardEntry({ tournament, onBack }: Props) {
   const sectionId = 'main' // Placeholder for future section support
   const [boardResults, setBoardResults] = useState<any[]>(() => {
@@ -167,20 +171,27 @@ export default function BoardEntry({ tournament, onBack }: Props) {
         setVulnerability(getBoardVulnerability(next))
         return next
       })
-      setBoardResults((prev) => [
-        ...prev,
-        {
-          board: boardNumber,
-          contract,
-          declarer,
-          result,
-          vulnerability,
-          doubled,
-          imp: data.imp,
-          hcp: data.declaringHcp,
-          actualScore: data.actualScore,
-        },
-      ])
+      setBoardResults((prev) => {
+        // Remove any existing entry for this board number
+        const filtered = prev.filter(r => r.board !== boardNumber)
+        const updated = [
+          ...filtered,
+          {
+            board: boardNumber,
+            contract,
+            declarer,
+            result,
+            vulnerability,
+            doubled,
+            imp: data.imp,
+            hcp: data.declaringHcp,
+            actualScore: data.actualScore,
+          },
+        ]
+        // Sort by board number ascending
+        updated.sort((a, b) => a.board - b.board)
+        return updated
+      })
       // Reset entry fields for next board
       setContractLevel(1)
       setContractSuit('C')
@@ -483,5 +494,5 @@ export default function BoardEntry({ tournament, onBack }: Props) {
         {data ? <ScoreCard data={data} /> : null}
       </div>
     </div>
-  )
+  );
 }
