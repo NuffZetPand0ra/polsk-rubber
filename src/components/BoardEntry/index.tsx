@@ -2,6 +2,7 @@
 
 
 import { useEffect, useMemo, useState } from 'react'
+import { useState as useModalState } from 'react'
 import ScoreCard from '../ScoreCard'
 import { useScoring } from '../../hooks/useScoring'
 import { useTheme } from '../../hooks/useTheme'
@@ -33,6 +34,8 @@ const doubledOptions: Array<{ labelKey: 'doubled.undoubled'; value: Doubled }> =
 // Add state for board number and match tally
 
 export default function BoardEntry({ tournament, onBack }: Props) {
+      // Modal state for end-of-tournament popup
+      const [showEndPopup, setShowEndPopup] = useState(false);
     // Helper: get board entry by number
     const getBoardEntry = (n: number) => {
       return boardResults.find((r: any) => r.board === n) || null;
@@ -191,11 +194,6 @@ export default function BoardEntry({ tournament, onBack }: Props) {
   // Handler for submitting a board result and updating tally
   const handleSubmitBoard = () => {
     if (data) {
-      setBoardNumber((prev) => {
-        const next = prev + 1
-        setVulnerability(getBoardVulnerability(next))
-        return next
-      })
       setBoardResults((prev) => {
         // Remove any existing entry for this board number
         const filtered = prev.filter(r => r.board !== boardNumber)
@@ -215,22 +213,130 @@ export default function BoardEntry({ tournament, onBack }: Props) {
         ]
         // Sort by board number ascending
         updated.sort((a, b) => a.board - b.board)
+        // If all boards are played after this entry, show popup
+        if (updated.length === tournament.boardsPerMatch) {
+          setShowEndPopup(true);
+        }
         return updated
       })
-      // Reset entry fields for next board
-      setContractLevel(1)
-      setContractSuit('C')
-      setDeclarer('N')
-      setResult(0)
-      setDoubled(null)
-      setManualHcp(20)
+
+      // Find the lowest unplayed board number
+      const playedBoards = boardResults.map(r => r.board);
+      let nextBoard = null;
+      for (let i = 1; i <= tournament.boardsPerMatch; i++) {
+        if (!playedBoards.includes(i) && i !== boardNumber) {
+          nextBoard = i;
+          break;
+        }
+      }
+      // If all boards are played, stay on current board
+      if (nextBoard === null) {
+        // Do not advance
+      } else {
+        setBoardNumber(nextBoard);
+        setVulnerability(getBoardVulnerability(nextBoard));
+        // Reset entry fields for next board
+        setContractLevel(1)
+        setContractSuit('C')
+        setDeclarer('N')
+        setResult(0)
+        setDoubled(null)
+        setManualHcp(20)
+      }
     }
+  }
+  // Handler for extending tournament
+  const handleExtendTournament = () => {
+    // Set boardsPerMatch to a very high number (simulate unlimited)
+    tournament.boardsPerMatch = 9999;
+    setShowEndPopup(false);
+    // Find next unplayed board
+    let next = 1;
+    while (boardResults.some(r => r.board === next)) next++;
+    setBoardNumber(next);
+    setVulnerability(getBoardVulnerability(next));
+    setContractLevel(1);
+    setContractSuit('C');
+    setDeclarer('N');
+    setResult(0);
+    setDoubled(null);
+    setManualHcp(20);
+  };
+
+  // Handler for going back (corrections)
+  const handleGoBack = () => {
+    setShowEndPopup(false);
+  };
+
+  // Handler for going back to tournaments
+  const handleBackToTournaments = () => {
+    setShowEndPopup(false);
+    onBack();
+  };
+  // Calculate VP if defined
+  let vp = null;
+  if (tournament.vpTable && typeof tournament.vpTable === 'function') {
+    vp = tournament.vpTable(impTally, tournament.boardsPerMatch);
   }
 
   const boardsLeft = tournament.boardsPerMatch - boardsPlayed
 
   return (
     <div className="mx-auto w-full max-w-5xl p-3 pb-8 md:p-5">
+      {/* End of tournament popup/modal */}
+      {showEndPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-6 max-w-lg w-full">
+            <h2 className="text-2xl font-bold mb-2">Tournament Complete</h2>
+            <div className="mb-2">Total IMPs: <strong>{impTally}</strong></div>
+            {vp !== null && (
+              <div className="mb-2">Victory Points: <strong>{vp}</strong></div>
+            )}
+            <div className="mb-4">
+              <h3 className="font-semibold mb-1">Results Table</h3>
+              <table className="min-w-full border text-sm">
+                <thead>
+                  <tr className="bg-slate-100 dark:bg-slate-800">
+                    <th className="border px-2 py-1">#</th>
+                    <th className="border px-2 py-1">N/S HCP</th>
+                    <th className="border px-2 py-1">Contract</th>
+                    <th className="border px-2 py-1">Declarer</th>
+                    <th className="border px-2 py-1">Result</th>
+                    <th className="border px-2 py-1">Vul</th>
+                    <th className="border px-2 py-1">Dbl</th>
+                    <th className="border px-2 py-1">IMP</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {boardResults.map((r: any) => (
+                    <tr key={r.board}>
+                      <td className="border px-2 py-1">{r.board}</td>
+                      <td className="border px-2 py-1">{r.hcp}</td>
+                      <td className="border px-2 py-1">{r.contract}</td>
+                      <td className="border px-2 py-1">{r.declarer}</td>
+                      <td className="border px-2 py-1">{r.result} ({r.actualScore >= 0 ? '+' : ''}{r.actualScore})</td>
+                      <td className="border px-2 py-1">{r.vulnerability}</td>
+                      <td className="border px-2 py-1">{r.doubled || '-'}</td>
+                      <td className="border px-2 py-1">{r.imp}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="bg-slate-200 dark:bg-slate-900 font-bold">
+                    <td className="border px-2 py-1 text-right" colSpan={7}>Total IMP</td>
+                    <td className="border px-2 py-1">{impTally}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            <div className="flex gap-2 mt-4">
+              <button className="bg-blue-600 text-white px-4 py-2 rounded font-semibold" onClick={handleBackToTournaments}>Back to Tournaments</button>
+              <button className="bg-green-600 text-white px-4 py-2 rounded font-semibold" onClick={handleExtendTournament}>Extend Tournament</button>
+              <button className="bg-gray-400 text-white px-4 py-2 rounded font-semibold" onClick={handleGoBack}>Go Back</button>
+            </div>
+          </div>
+        </div>
+      )}
       <header className="mb-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-6">
         <div className="flex gap-4 mb-2">
           <div className="text-sm text-slate-700 dark:text-slate-200">
