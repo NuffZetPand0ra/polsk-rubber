@@ -50,6 +50,28 @@ export type TranslationKey =
   | 'preview.hcp'
   | 'preview.nv'
   | 'preview.vul'
+  | 'scan.section'
+  | 'scan.boardNumber'
+  | 'scan.startCamera'
+  | 'scan.stopCamera'
+  | 'scan.capture'
+  | 'scan.cameraUnsupported'
+  | 'scan.cameraReady'
+  | 'scan.inferenceTitle'
+  | 'scan.confidence'
+  | 'scan.notes'
+  | 'scan.applySuggestion'
+  | 'scan.detectedColors'
+  | 'scan.color.red'
+  | 'scan.color.green'
+  | 'scan.color.white'
+  | 'scan.color.unknown'
+  | 'scan.cardDetection'
+  | 'scan.cardsVisible'
+  | 'scan.suitHints'
+  | 'scan.suitHint.red'
+  | 'scan.suitHint.black'
+  | 'scan.suitHint.unknown'
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   da: {
@@ -104,6 +126,28 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'preview.hcp': 'HCP',
     'preview.nv': 'Ikke sårbar',
     'preview.vul': 'Sårbar',
+    'scan.section': 'Handscan (kamera)',
+    'scan.boardNumber': 'Boardnummer',
+    'scan.startCamera': 'Start kamera',
+    'scan.stopCamera': 'Stop kamera',
+    'scan.capture': 'Tag billede og scan',
+    'scan.cameraUnsupported': 'Kamera er ikke understøttet i denne browser.',
+    'scan.cameraReady': 'Kamera er aktivt. Placer board-mappen og tryk scan.',
+    'scan.inferenceTitle': 'Scan-resultat',
+    'scan.confidence': 'Sikkerhed',
+    'scan.notes': 'Noter',
+    'scan.applySuggestion': 'Brug foreslået sårbarhed',
+    'scan.detectedColors': 'Registrerede farver',
+    'scan.color.red': 'Rød',
+    'scan.color.green': 'Grøn',
+    'scan.color.white': 'Hvid',
+    'scan.color.unknown': 'Ukendt',
+    'scan.cardDetection': 'Kortdetektion (hjørner)',
+    'scan.cardsVisible': 'Synlige hjørner',
+    'scan.suitHints': 'Farvehints',
+    'scan.suitHint.red': 'Rød farve',
+    'scan.suitHint.black': 'Sort farve',
+    'scan.suitHint.unknown': 'Ukendt',
   },
   en: {
     'app.badge': 'Polsk Rubber',
@@ -157,5 +201,27 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'preview.hcp': 'HCP',
     'preview.nv': 'Not Vulnerable',
     'preview.vul': 'Vulnerable',
+    'scan.section': 'Hand Scan (camera)',
+    'scan.boardNumber': 'Board Number',
+    'scan.startCamera': 'Start camera',
+    'scan.stopCamera': 'Stop camera',
+    'scan.capture': 'Capture and scan',
+    'scan.cameraUnsupported': 'Camera is not supported in this browser.',
+    'scan.cameraReady': 'Camera is active. Place the board folder and press scan.',
+    'scan.inferenceTitle': 'Scan result',
+    'scan.confidence': 'Confidence',
+    'scan.notes': 'Notes',
+    'scan.applySuggestion': 'Use suggested vulnerability',
+    'scan.detectedColors': 'Detected colors',
+    'scan.color.red': 'Red',
+    'scan.color.green': 'Green',
+    'scan.color.white': 'White',
+    'scan.color.unknown': 'Unknown',
+    'scan.cardDetection': 'Card detection (corners)',
+    'scan.cardsVisible': 'Visible corners',
+    'scan.suitHints': 'Suit hints',
+    'scan.suitHint.red': 'Red suit color',
+    'scan.suitHint.black': 'Black suit color',
+    'scan.suitHint.unknown': 'Unknown',
   },
 }
