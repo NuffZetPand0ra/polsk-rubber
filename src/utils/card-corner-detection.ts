@@ -22,10 +22,10 @@ interface Zone {
 }
 
 const POCKET_ZONES: Record<PocketSeat, Zone> = {
-  north: { x: 0.15, y: 0.02, width: 0.7, height: 0.22 },
-  east: { x: 0.75, y: 0.15, width: 0.23, height: 0.7 },
-  south: { x: 0.15, y: 0.76, width: 0.7, height: 0.22 },
-  west: { x: 0.02, y: 0.15, width: 0.23, height: 0.7 },
+  north: { x: 0.18, y: 0.00, width: 0.67, height: 0.32 },
+  east: { x: 0.66, y: 0.11, width: 0.34, height: 0.87 },
+  south: { x: 0.075, y: 0.675, width: 0.78, height: 0.325 },
+  west: { x: 0.00, y: 0.10, width: 0.36, height: 0.72 },
 }
 
 const SEAT_ORDER: PocketSeat[] = ['north', 'east', 'south', 'west']

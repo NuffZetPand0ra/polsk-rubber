@@ -8,6 +8,7 @@ import { getDatumSchemaPreview } from '../../data/datum-table'
 import { detectPocketColorsFromImageData } from '../../utils/camera-scan'
 import { inferVulnerability } from '../../utils/handscan'
 import { detectCardCornersFromImageData } from '../../utils/card-corner-detection'
+import { recognizeCardsFromCorners } from '../../utils/card-recognition'
 import type { Doubled, Vulnerability } from '../../types'
 
 const vulnerabilityOptions: Vulnerability[] = ['None', 'NS', 'EW', 'Both']
@@ -45,6 +46,12 @@ export default function BoardEntry() {
   const [detectedColors, setDetectedColors] = useState<ReturnType<typeof detectPocketColorsFromImageData> | null>(null)
   const [visibleCornersBySeat, setVisibleCornersBySeat] = useState<Record<'north' | 'east' | 'south' | 'west', number> | null>(null)
   const [seatSuitHints, setSeatSuitHints] = useState<Record<'north' | 'east' | 'south' | 'west', 'red' | 'black' | 'unknown'> | null>(null)
+  const [recognizedCardsBySeat, setRecognizedCardsBySeat] = useState<Record<'north' | 'east' | 'south' | 'west', string[]>>({
+    north: [],
+    east: [],
+    south: [],
+    west: [],
+  })
 
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
@@ -159,6 +166,7 @@ export default function BoardEntry() {
     const colors = detectPocketColorsFromImageData(imageData)
     const inference = inferVulnerability(colors, boardNumber)
     const cornerDetections = detectCardCornersFromImageData(imageData, 13)
+    const recognizedCards = recognizeCardsFromCorners(imageData, cornerDetections)
 
     const visibleCorners = {
       north: 0,
@@ -195,10 +203,26 @@ export default function BoardEntry() {
       west: suitVotes.west.red === suitVotes.west.black ? 'unknown' : suitVotes.west.red > suitVotes.west.black ? 'red' : 'black',
     }
 
+    const cardsBySeat: Record<'north' | 'east' | 'south' | 'west', string[]> = {
+      north: [],
+      east: [],
+      south: [],
+      west: [],
+    }
+
+    for (const card of recognizedCards.sort((a, b) => a.index - b.index)) {
+      if (card.confidence < 0.4) {
+        continue
+      }
+
+      cardsBySeat[card.seat].push(`${card.token} (${Math.round(card.confidence * 100)}%)`)
+    }
+
     setDetectedColors(colors)
     setScanResult(inference)
     setVisibleCornersBySeat(visibleCorners)
     setSeatSuitHints(seatHints)
+    setRecognizedCardsBySeat(cardsBySeat)
   }
 
   const colorLabel = (color: 'red' | 'green' | 'white' | 'unknown'): string => {
@@ -534,6 +558,20 @@ export default function BoardEntry() {
                     </p>
                   </div>
                 ) : null}
+
+                <div className="mt-2 rounded-md border border-slate-200 bg-slate-50 p-2 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200">
+                  <p className="font-semibold">{t('scan.recognizedCards')}</p>
+                  {recognizedCardsBySeat.north.length === 0 &&
+                  recognizedCardsBySeat.east.length === 0 &&
+                  recognizedCardsBySeat.south.length === 0 &&
+                  recognizedCardsBySeat.west.length === 0 ? (
+                    <p>{t('scan.noCardsDetected')}</p>
+                  ) : (
+                    <p>
+                      {t('seat.north')}: {recognizedCardsBySeat.north.join(', ') || '-'} | {t('seat.east')}: {recognizedCardsBySeat.east.join(', ') || '-'} | {t('seat.south')}: {recognizedCardsBySeat.south.join(', ') || '-'} | {t('seat.west')}: {recognizedCardsBySeat.west.join(', ') || '-'}
+                    </p>
+                  )}
+                </div>
 
                 {scanResult.vulnerability && scanResult.vulnerability !== vulnerability ? (
                   <button

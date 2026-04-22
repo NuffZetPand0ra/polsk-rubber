@@ -72,6 +72,8 @@ export type TranslationKey =
   | 'scan.suitHint.red'
   | 'scan.suitHint.black'
   | 'scan.suitHint.unknown'
+  | 'scan.recognizedCards'
+  | 'scan.noCardsDetected'
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   da: {
@@ -148,6 +150,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'scan.suitHint.red': 'Rød farve',
     'scan.suitHint.black': 'Sort farve',
     'scan.suitHint.unknown': 'Ukendt',
+    'scan.recognizedCards': 'Genkendte kort',
+    'scan.noCardsDetected': 'Ingen kort kunne genkendes endnu.',
   },
   en: {
     'app.badge': 'Polsk Rubber',
@@ -223,5 +227,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'scan.suitHint.red': 'Red suit color',
     'scan.suitHint.black': 'Black suit color',
     'scan.suitHint.unknown': 'Unknown',
+    'scan.recognizedCards': 'Recognized cards',
+    'scan.noCardsDetected': 'No cards recognized yet.',
   },
 }
