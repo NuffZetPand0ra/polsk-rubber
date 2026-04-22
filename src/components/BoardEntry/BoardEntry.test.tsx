@@ -2,11 +2,21 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 import BoardEntry from './index'
 import { I18nProvider } from '../../i18n/I18nProvider'
+import type { Tournament } from '../../types'
+
+const mockTournament: Tournament = {
+  id: 'test-1',
+  name: 'Test Turnering',
+  boardsPerMatch: 8,
+  matchFormat: 'vp',
+  datumSchema: 'modern',
+  createdAt: new Date().toISOString(),
+}
 
 function renderWithProviders() {
   return render(
     <I18nProvider>
-      <BoardEntry />
+      <BoardEntry tournament={mockTournament} onBack={() => undefined} />
     </I18nProvider>,
   )
 }

@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import ScoreCard from '../ScoreCard'
-import { useTournamentStore } from '../../store/tournament'
 import { useScoring } from '../../hooks/useScoring'
 import { useTheme } from '../../hooks/useTheme'
 import { useI18n } from '../../i18n/I18nProvider'
 import { getDatumSchemaPreview } from '../../data/datum-table'
-import type { Doubled, Vulnerability } from '../../types'
+import type { Doubled, Tournament, Vulnerability } from '../../types'
+
+interface Props {
+  tournament: Tournament
+  onBack: () => void
+}
 
 const vulnerabilityOptions: Vulnerability[] = ['None', 'NS', 'EW', 'Both']
 const contractLevels = [1, 2, 3, 4, 5, 6, 7] as const
@@ -22,8 +26,8 @@ const doubledOptions: Array<{ labelKey: 'doubled.undoubled'; value: Doubled }> =
   { labelKey: 'doubled.undoubled', value: null },
 ]
 
-export default function BoardEntry() {
-  const { datumSchema, setDatumSchema } = useTournamentStore()
+export default function BoardEntry({ tournament, onBack }: Props) {
+  const datumSchema = tournament.datumSchema
   const { isDark, toggleTheme } = useTheme()
   const { language, setLanguage, t } = useI18n()
 
@@ -102,7 +106,14 @@ export default function BoardEntry() {
       <header className="mb-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-6">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">{t('app.badge')}</p>
+            <button
+              type="button"
+              onClick={onBack}
+              className="mb-1 inline-flex items-center text-xs font-semibold text-primary hover:underline"
+            >
+              {t('tournament.backToList')}
+            </button>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">{tournament.name}</p>
             <h1 className="mt-1 text-3xl font-semibold text-slate-900 dark:text-slate-100 md:text-4xl">{t('app.heading')}</h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-600 dark:text-slate-300 md:text-base">
               {t('app.intro')}
@@ -137,17 +148,9 @@ export default function BoardEntry() {
           <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100 md:text-2xl">{t('section.boardEntry')}</h2>
 
           <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <label className="text-sm text-slate-700 dark:text-slate-200">
-              {t('schema.label')}
-              <select
-                className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2.5 text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-blue-900"
-                value={datumSchema}
-                onChange={(event) => setDatumSchema(event.target.value as 'modern' | 'classic')}
-              >
-                <option value="modern">{t('schema.modern')}</option>
-                <option value="classic">{t('schema.classic')}</option>
-              </select>
-            </label>
+            <p className="text-xs text-slate-500 dark:text-slate-400 md:col-span-2">
+              {t('schema.label')}: {datumSchema === 'modern' ? t('schema.modern') : t('schema.classic')}
+            </p>
 
             <label className="text-sm text-slate-700 dark:text-slate-200">
               {t('field.contractLevel')}
