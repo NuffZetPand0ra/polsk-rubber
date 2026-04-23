@@ -67,7 +67,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
   const [result, setResult] = useState(0)
   const [vulnerability, setVulnerability] = useState<Vulnerability>(getBoardVulnerability(1))
   const [doubled, setDoubled] = useState<Doubled>(null)
-  const [manualHcp, setManualHcp] = useState(24)
+  const [manualHcp, setManualHcp] = useState(20)
   const [showSchemaPreview, setShowSchemaPreview] = useState(false)
 
   const contract = `${contractLevel}${contractSuit}`
