@@ -117,8 +117,6 @@ export interface Tournament {
   createdAt: string
   players: Player[]
   sessions: Session[]
-  /** Optional function to calculate VP from IMPs and boards */
-  vpTable?: (imp: number, boards: number) => number
 }
 
 // ...existing code...
@@ -134,9 +132,8 @@ export interface ScoreBoardInput {
 }
 
 export interface ScoreBoardOutput {
-  majoritySide: Side
-  majorityHcp: number
   declaringSide: Side
+  declaringVulnerable: boolean
   declaringHcp: number
   datumRaw: number
   datumRounded: number
