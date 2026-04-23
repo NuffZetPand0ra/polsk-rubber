@@ -481,46 +481,6 @@ export default function BoardEntry({ tournament, onBack }: Props) {
             </button>
           </div>
 
-          {boardResults.length > 0 && (
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-2">Board Results</h3>
-              <table className="min-w-full border text-sm">
-                <thead>
-                  <tr className="bg-slate-100 dark:bg-slate-800">
-                    <th className="border px-2 py-1">#</th>
-                    <th className="border px-2 py-1">N/S HCP</th>
-                    <th className="border px-2 py-1">Contract</th>
-                    <th className="border px-2 py-1">Declarer</th>
-                    <th className="border px-2 py-1">Result</th>
-                    <th className="border px-2 py-1">Vul</th>
-                    <th className="border px-2 py-1">Dbl</th>
-                    <th className="border px-2 py-1">IMP</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {boardResults.map((r: any) => (
-                    <tr key={r.board}>
-                      <td className="border px-2 py-1">{r.board}</td>
-                      <td className="border px-2 py-1">{r.hcp}</td>
-                      <td className="border px-2 py-1">{r.contract}</td>
-                      <td className="border px-2 py-1">{r.declarer}</td>
-                      <td className="border px-2 py-1">{r.result} ({r.actualScore >= 0 ? '+' : ''}{r.actualScore})</td>
-                      <td className="border px-2 py-1">{r.vulnerability}</td>
-                      <td className="border px-2 py-1">{r.doubled || '-'}</td>
-                      <td className="border px-2 py-1">{r.imp}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className="bg-slate-200 dark:bg-slate-900 font-bold">
-                    <td className="border px-2 py-1 text-right" colSpan={7}>Total IMP</td>
-                    <td className="border px-2 py-1">{boardResults.reduce((sum, r) => sum + r.imp, 0)}</td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          )}
-
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <p className="text-xs text-slate-500 dark:text-slate-400 md:col-span-2">
               {t('schema.label')}: {datumSchema === 'modern' ? t('schema.modern') : t('schema.classic')}
@@ -649,6 +609,46 @@ export default function BoardEntry({ tournament, onBack }: Props) {
               />
             </label>
           </div>
+
+          {boardResults.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-2">Board Results</h3>
+              <table className="min-w-full border text-sm">
+                <thead>
+                  <tr className="bg-slate-100 dark:bg-slate-800">
+                    <th className="border px-2 py-1">#</th>
+                    <th className="border px-2 py-1">N/S HCP</th>
+                    <th className="border px-2 py-1">Contract</th>
+                    <th className="border px-2 py-1">Declarer</th>
+                    <th className="border px-2 py-1">Result</th>
+                    <th className="border px-2 py-1">Vul</th>
+                    <th className="border px-2 py-1">Dbl</th>
+                    <th className="border px-2 py-1">IMP</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {boardResults.map((r: any) => (
+                    <tr key={r.board}>
+                      <td className="border px-2 py-1">{r.board}</td>
+                      <td className="border px-2 py-1">{r.hcp}</td>
+                      <td className="border px-2 py-1">{r.contract}</td>
+                      <td className="border px-2 py-1">{r.declarer}</td>
+                      <td className="border px-2 py-1">{r.result} ({r.actualScore >= 0 ? '+' : ''}{r.actualScore})</td>
+                      <td className="border px-2 py-1">{r.vulnerability}</td>
+                      <td className="border px-2 py-1">{r.doubled || '-'}</td>
+                      <td className="border px-2 py-1">{r.imp}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="bg-slate-200 dark:bg-slate-900 font-bold">
+                    <td className="border px-2 py-1 text-right" colSpan={7}>Total IMP</td>
+                    <td className="border px-2 py-1">{boardResults.reduce((sum, r) => sum + r.imp, 0)}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
 
           <div className="mt-4">
             <button
