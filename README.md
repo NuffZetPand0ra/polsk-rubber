@@ -98,3 +98,7 @@ Configured values:
 - Node version: `22`
 
 You can deploy by connecting the repo in Render and using the existing `render.yaml`.
+
+## License
+
+This project is licensed under the MIT License. See `LICENSE` for the full text.
