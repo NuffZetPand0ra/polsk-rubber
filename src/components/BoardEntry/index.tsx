@@ -87,7 +87,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
     return []
   })
 
-  const [boardNumber, setBoardNumber] = useState(() => {
+  const [boardNumber, setBoardNumber] = useState<number | null>(() => {
     const key = `boardResults:${tournament.id}`
     const stored = localStorage.getItem(key)
     if (stored) {
@@ -120,7 +120,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
   const [result, setResult] = useState(0)
   const [vulnerability, setVulnerability] = useState<Vulnerability>(getBoardVulnerability(1))
   const [doubled, setDoubled] = useState<Doubled>(null)
-  const [manualHcp, setManualHcp] = useState(20)
+  const [manualHcp, setManualHcp] = useState<number | null>(20)
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
@@ -130,7 +130,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
       setContractSuit((entry.contract.slice(1) || 'C') as (typeof contractSuits)[number])
       setDeclarer((entry.declarer || 'N') as 'N' | 'E' | 'S' | 'W')
       setResult(entry.result ?? 0)
-      setVulnerability(entry.vulnerability || getBoardVulnerability(boardNumber))
+      setVulnerability(entry.vulnerability || getBoardVulnerability(boardNumber ?? 1))
       setDoubled(entry.doubled ?? null)
       setManualHcp(entry.hcp ?? 20)
     } else {
@@ -138,11 +138,10 @@ export default function BoardEntry({ tournament, onBack }: Props) {
       setContractSuit('C')
       setDeclarer('N')
       setResult(0)
-      setVulnerability(getBoardVulnerability(boardNumber))
+      setVulnerability(getBoardVulnerability(boardNumber ?? 1))
       setDoubled(null)
       setManualHcp(20)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [boardNumber, boardResults])
   /* eslint-enable react-hooks/set-state-in-effect */
 
@@ -187,7 +186,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
       vulnerability,
       doubled,
       schema: datumSchema,
-      manualDeclaringHcp: manualHcp,
+      manualDeclaringHcp: manualHcp ?? undefined,
     }),
     [contract, declarer, result, vulnerability, doubled, datumSchema, manualHcp],
   )
@@ -209,7 +208,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
         : null
 
   const handleSubmitBoard = () => {
-    if (data) {
+    if (data && boardNumber !== null) {
       setBoardResults((prev) => {
         const filtered = prev.filter((r) => r.board !== boardNumber)
         const updated = [
@@ -222,11 +221,11 @@ export default function BoardEntry({ tournament, onBack }: Props) {
             vulnerability,
             doubled,
             imp: data.imp,
-            hcp: manualHcp,
+            hcp: manualHcp ?? 20,
             actualScore: data.actualScore,
           },
         ]
-        updated.sort((a, b) => a.board - b.board)
+        updated.sort((a: BoardResult, b: BoardResult) => a.board - b.board)
         if (updated.length === boardsPerMatch) {
           setShowEndPopup(true)
         }
@@ -235,11 +234,11 @@ export default function BoardEntry({ tournament, onBack }: Props) {
 
       const playedBoards = boardResults.map((r) => r.board)
       let nextBoard: number | null = null
-      for (let i = boardNumber + 1; i <= boardsPerMatch; i++) {
+      for (let i = (boardNumber ?? 1) + 1; i <= boardsPerMatch; i++) {
         if (!playedBoards.includes(i)) { nextBoard = i; break }
       }
       if (nextBoard === null) {
-        for (let i = 1; i < boardNumber; i++) {
+        for (let i = 1; i < (boardNumber ?? 1); i++) {
           if (!playedBoards.includes(i)) { nextBoard = i; break }
         }
       }
@@ -407,7 +406,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
                 onChange={e => {
                   const val = e.target.value
                   if (val === '') {
-                    setBoardNumber(null as any)
+                    setBoardNumber(null)
                   } else {
                     let n = Number(val)
                     if (boardsPerMatch === 9999) {
@@ -427,7 +426,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
               type="button"
               className="rounded bg-blue-600 text-white px-4 py-2 font-semibold hover:bg-blue-700"
               onClick={handleSubmitBoard}
-              disabled={!data}
+              disabled={!data || boardNumber === null}
             >
               Enter Board Result
             </button>
@@ -553,7 +552,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
                 onChange={event => {
                   const val = event.target.value
                   if (val === '') {
-                    setManualHcp(null as any)
+                    setManualHcp(null)
                   } else {
                     setManualHcp(Number(val))
                   }
