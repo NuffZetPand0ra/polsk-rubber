@@ -1,75 +1,100 @@
 # Polsk Rubber Bridge
 
-Single-table Butler-style contract bridge scoring app. Each board compares actual result versus an HCP-based datum, then converts the difference to WBF IMPs.
+Polsk Rubber Bridge is a contract bridge scoring app focused on single-table Butler-style board scoring.
+For each board, the app compares the actual score against an HCP-based datum and converts the difference to IMP.
 
-## Tech Stack
+## What the app includes
 
-- React + TypeScript + Vite
+- Tournament mode
+	- Create and manage tournaments
+	- Configure boards per match (8-32)
+	- Choose match format (VP or Carry-over IMP)
+	- Choose datum schema (Modern or Classic)
+- Just Play mode for quick one-off entry
+- Board-by-board entry
+	- Contract, declarer, result, vulnerability, and doubles
+	- Manual NS HCP input (0-40)
+	- Automatic board vulnerability helper
+- Live scoring output
+	- Datum (raw and rounded)
+	- Actual score, diff, and IMP
+	- Running IMP tally and VP summary
+- Local persistence
+	- Tournaments and matches are persisted via Zustand
+	- Board entry state is saved in localStorage
+- UI options
+	- Danish and English language toggle
+	- Light/Dark theme toggle
+	- Mobile-friendly responsive layout
+
+## Tech stack
+
+- React 19 + TypeScript + Vite
+- Zustand (with persist middleware)
 - Tailwind CSS
-- Zustand
 - Vitest + React Testing Library
+- vite-plugin-pwa
 
-## MVP Scope (Current)
+## Getting started
 
-- Single-board entry flow
-- Manual declaring HCP input (0-40)
-- Datum schema selection (Modern and Classic)
-- Duplicate bridge score calculation with vulnerability and X/XX
-- IMP conversion via WBF table
-- NS perspective normalization for actual score storage
+### Prerequisites
 
-Supabase persistence and Claude hand recognition are intentionally out of scope in this first implementation slice.
+- Node.js 22 (matches Render deployment config)
+- npm
 
-## Product Direction Notes
-
-- Manual scoring must remain usable offline.
-- AI hand recognition is optional and requires internet.
-- i18n is now in place with Danish as default and English as fallback.
-
-## Development
+### Install and run
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Run a Local Test Server
+Open http://localhost:5173
 
-Use the Vite dev server for quick manual testing:
+## Scripts
 
-```bash
-npm run dev
-```
+- `npm run dev` - Start the Vite dev server
+- `npm run build` - Type-check and create a production build
+- `npm run preview` - Preview the production build locally
+- `npm run lint` - Run ESLint
+- `npm run test` - Run Vitest in watch mode
+- `npm run test:run` - Run tests once
+- `npm run coverage` - Run tests with coverage
 
-Then open http://localhost:5173 in your browser.
+## Testing
 
-If you want to test the production build locally instead:
-
-```bash
-npm run build
-npm run preview
-```
-
-## Test and Build
+The repository contains unit tests for scoring utilities and component tests for UI flows.
 
 ```bash
-npm run test
 npm run test:run
-npm run coverage
-npm run build
 ```
 
-## Render.com Support
+## CI
 
-The project includes [render.yaml](render.yaml) for static site deployment.
+GitHub Actions is configured to run PR-only checks against `main`.
 
-Render settings used:
+- Lint: `npm run lint`
+- Tests: `npm run test:run`
+- Coverage: `npm run coverage`
+
+The workflow does not run on direct pushes to `main`.
+
+## PWA behavior
+
+The app is configured as a Progressive Web App using `vite-plugin-pwa`.
+
+- Service worker auto-updates in production builds
+- PWA is disabled during development (`NODE_ENV=development`)
+- Manifest and icons are configured in `vite.config.ts` and `public/icons/`
+
+## Deployment
+
+`render.yaml` is included for static deployment on Render.
+
+Configured values:
 
 - Build command: `npm ci && npm run build`
 - Publish directory: `dist`
 - Node version: `22`
 
-Deploy options:
-
-1. Connect the repository in Render and let it auto-detect [render.yaml](render.yaml).
-2. Or create a Static Site manually with the same build and publish settings.
+You can deploy by connecting the repo in Render and using the existing `render.yaml`.
