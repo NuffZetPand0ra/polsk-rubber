@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import type { Hand, ScoreBoardInput, ScoreBoardOutput } from '../types'
 import { getDatumForBoard, getDeclaringSide } from '../utils/datum'
-import { computeHandHcp, validateManualHcp } from '../utils/hcp'
+import { computeDeclaringHcp, validateManualHcp } from '../utils/hcp'
 import { scoreBoard } from '../utils/imp'
 import { computeActualScore } from '../utils/scoring'
 
@@ -22,22 +22,13 @@ export function useScoring(input: UseScoringInput): {
   errorMessage: string | null
 } {
   return useMemo(() => {
+    const declaringSide = getDeclaringSide(input.declarer)
 
-    // Compute both sides' HCP
-    let nsHcp: number | undefined, ewHcp: number | undefined
-    if (input.hands) {
-      nsHcp = computeHandHcp(input.hands.north) + computeHandHcp(input.hands.south)
-      ewHcp = computeHandHcp(input.hands.east) + computeHandHcp(input.hands.west)
-    } else {
-      // Fallback to manual HCP (assume for NS, derive EW)
-      nsHcp = input.manualDeclaringHcp
-      ewHcp = nsHcp != null ? 40 - nsHcp : undefined
-    }
+    const declaringHcp = input.hands
+      ? computeDeclaringHcp(input.hands, declaringSide)
+      : input.manualDeclaringHcp
 
-    if (
-      nsHcp == null || ewHcp == null ||
-      !validateManualHcp(nsHcp) || !validateManualHcp(ewHcp)
-    ) {
+    if (declaringHcp == null || !validateManualHcp(declaringHcp)) {
       return {
         data: null,
         errorKey: 'invalidHcp' as const,
@@ -45,42 +36,45 @@ export function useScoring(input: UseScoringInput): {
       }
     }
 
-
-    // Determine which side has majority HCP
-    let majoritySide: 'NS' | 'EW' = nsHcp >= ewHcp ? 'NS' : 'EW'
-    let majorityHcp = majoritySide === 'NS' ? nsHcp : ewHcp
-
-    // Compute declaring side and its HCP
-    const declaringSide = getDeclaringSide(input.declarer)
-    const declaringHcp = declaringSide === 'NS' ? nsHcp : ewHcp
-
-    // Compute datum and actual score from majority side's perspective
-    let datumRaw = getDatumForBoard(
-      majorityHcp,
-      input.vulnerability,
-      majoritySide,
-      input.schema,
-    )
-
-
-    // Compute actual score from declarer's side (never flip)
-    const actualScore = computeActualScore(
-      input.contract,
-      input.result,
-      input.vulnerability,
-      input.doubled,
-      declaringSide,
-    )
-
     try {
+
+      let datumRaw = getDatumForBoard(
+        declaringHcp,
+        input.vulnerability,
+        declaringSide,
+        input.schema,
+      )
+
+      let actualScore = computeActualScore(
+        input.contract,
+        input.result,
+        input.vulnerability,
+        input.doubled,
+        declaringSide,
+      )
+
+      // If declaring side has <20 HCP, compute datum for the other side and flip perspective
+      if (declaringHcp < 20) {
+        const otherSide = declaringSide === 'NS' ? 'EW' : 'NS'
+        const otherHcp = 40 - declaringHcp
+        datumRaw = getDatumForBoard(
+          otherHcp,
+          input.vulnerability,
+          otherSide,
+          input.schema,
+        )
+        datumRaw = -datumRaw // Flip to NS perspective
+        // Do NOT flip actualScore; it should always be from NS perspective
+      }
 
       const { datumRounded, diff, imp } = scoreBoard(actualScore, datumRaw)
 
       return {
         data: {
-          majoritySide,
-          majorityHcp,
           declaringSide,
+          declaringVulnerable:
+            input.vulnerability === 'Both' ||
+            input.vulnerability === declaringSide,
           declaringHcp,
           datumRaw,
           datumRounded,

@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { render } from '@testing-library/react'
+import { fireEvent, screen } from '@testing-library/dom'
 import { describe, expect, it } from 'vitest'
 import BoardEntry from './index'
 import { I18nProvider } from '../../i18n/I18nProvider'

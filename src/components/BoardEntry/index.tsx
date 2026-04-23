@@ -1,39 +1,3 @@
-// Golden mean VP calculation
-function goldenMeanVP(margin: number, boards: number): [number, number] {
-  const Tau = (Math.sqrt(5) - 1) / 2;
-  const B = 15 * Math.sqrt(boards);
-  // Compute VP for all integer margins up to B, rounded
-  const vpArr: number[] = [];
-  for (let m = 0; m <= Math.ceil(B); m++) {
-    let vp = 10 + 10 * ((1 - Math.pow(Tau, 3 * m / B)) / (1 - Math.pow(Tau, 3)));
-    if (vp > 20) vp = 20;
-    vpArr.push(Math.round(vp * 100) / 100);
-  }
-  // Apply monotonicity fix up to 4 times
-  for (let iter = 0; iter < 4; iter++) {
-    for (let i = 1; i < vpArr.length - 1; i++) {
-      const prev = vpArr[i - 1], curr = vpArr[i], next = vpArr[i + 1];
-      if ((next - curr) > (curr - prev)) {
-        vpArr[i] = Math.round((curr + 0.01) * 100) / 100;
-      }
-    }
-  }
-  // Use the fixed value for the requested margin (rounded to nearest int)
-  let idx = Math.round(margin);
-  if (idx < 0) idx = 0;
-  if (idx > Math.ceil(B)) idx = Math.ceil(B);
-  let vpWinner = vpArr[idx];
-  let vpLoser = Math.round((20 - vpWinner) * 100) / 100;
-  // If sum is 19.99, add 0.01 to winner
-  if (Math.abs(vpWinner + vpLoser - 19.99) < 0.0001) {
-    vpWinner = Math.round((vpWinner + 0.01) * 100) / 100;
-    vpLoser = Math.round((20 - vpWinner) * 100) / 100;
-  }
-  return [vpWinner, vpLoser];
-}
-
-
-
 import { useEffect, useMemo, useState } from 'react'
 import ScoreCard from '../ScoreCard'
 import { useScoring } from '../../hooks/useScoring'
@@ -64,55 +28,16 @@ const doubledOptions: Array<{ labelKey: 'doubled.undoubled'; value: Doubled }> =
 ]
 
 // Add state for board number and match tally
-
 export default function BoardEntry({ tournament, onBack }: Props) {
-  // Modal state for end-of-tournament popup
-  const [showEndPopup, setShowEndPopup] = useState(false);
-  // Local state for boardsPerMatch to allow extension without mutating props
-  const [boardsPerMatch, setBoardsPerMatch] = useState(tournament.boardsPerMatch);
-    // Helper: get board entry by number
-    const getBoardEntry = (n: number) => {
-      return boardResults.find((r: any) => r.board === n) || null;
-    };
+  const [boardNumber, setBoardNumber] = useState(1)
+  const [impTally, setImpTally] = useState(0)
+  const [boardsPlayed, setBoardsPlayed] = useState(0)
+  // Prepare for sections: results are stored as { [tournamentId]: { [sectionId]: BoardResult[] } }
   const sectionId = 'main' // Placeholder for future section support
-  const [boardResults, setBoardResults] = useState<any[]>(() => {
-    const key = `boardResults:${tournament.id}`
-    const stored = localStorage.getItem(key)
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored)
-        return parsed[sectionId] || []
-      } catch {}
-    }
-    return []
-  })
-  const [boardNumber, setBoardNumber] = useState(() => {
-    const key = `boardResults:${tournament.id}`
-    const stored = localStorage.getItem(key)
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored)
-        const results = parsed[sectionId] || []
-        if (results.length > 0) {
-          const lastBoard = Math.max(...results.map((r: any) => r.board))
-          // If all boards are played, suggest last played board (n), else n+1
-          if (results.length >= tournament.boardsPerMatch) {
-            return lastBoard;
-          } else {
-            return lastBoard + 1;
-          }
-        }
-      } catch {}
-    }
-    return 1;
-  })
+  const [boardResults, setBoardResults] = useState<any[]>([])
   const datumSchema = tournament.datumSchema
   const { isDark, toggleTheme } = useTheme()
   const { language, setLanguage, t } = useI18n()
-
-  // Derived values for tally and boards played
-  const boardsPlayed = boardResults.length
-  const impTally = boardResults.reduce((sum: number, r: any) => sum + r.imp, 0)
 
   const [contractLevel, setContractLevel] = useState<number>(1)
   const [contractSuit, setContractSuit] = useState<(typeof contractSuits)[number]>('C')
@@ -120,28 +45,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
   const [result, setResult] = useState(0)
   const [vulnerability, setVulnerability] = useState<Vulnerability>(getBoardVulnerability(1))
   const [doubled, setDoubled] = useState<Doubled>(null)
-  const [manualHcp, setManualHcp] = useState(20)
-    // When boardNumber changes, prefill all inputs from boardResults/localStorage
-    useEffect(() => {
-      const entry = getBoardEntry(boardNumber);
-      if (entry) {
-        setContractLevel(Number(entry.contract[0]) || 1);
-        setContractSuit(entry.contract.slice(1) || 'C');
-        setDeclarer(entry.declarer || 'N');
-        setResult(entry.result ?? 0);
-        setVulnerability(entry.vulnerability || getBoardVulnerability(boardNumber));
-        setDoubled(entry.doubled ?? null);
-        setManualHcp(entry.hcp ?? 20);
-      } else {
-        setContractLevel(1);
-        setContractSuit('C');
-        setDeclarer('N');
-        setResult(0);
-        setVulnerability(getBoardVulnerability(boardNumber));
-        setDoubled(null);
-        setManualHcp(20);
-      }
-    }, [boardNumber, boardResults]);
+  const [manualHcp, setManualHcp] = useState(24)
   const [showSchemaPreview, setShowSchemaPreview] = useState(false)
 
   const contract = `${contractLevel}${contractSuit}`
@@ -163,27 +67,17 @@ export default function BoardEntry({ tournament, onBack }: Props) {
   )
 
 
-  // Load boardResults from localStorage on mount and set next board number
+  // Load boardResults from localStorage on mount
   useEffect(() => {
     const key = `boardResults:${tournament.id}`
     const stored = localStorage.getItem(key)
     if (stored) {
       try {
         const parsed = JSON.parse(stored)
-        const results = parsed[sectionId] || []
-        setBoardResults(results)
-        if (results.length > 0) {
-          const lastBoard = Math.max(...results.map((r: any) => r.board))
-          // If all boards are played, suggest last played board (n), else n+1
-          if (results.length >= tournament.boardsPerMatch) {
-            setBoardNumber(lastBoard);
-          } else {
-            setBoardNumber(lastBoard + 1);
-          }
-        }
+        setBoardResults(parsed[sectionId] || [])
       } catch {}
     }
-  }, [tournament.id, sectionId, tournament.boardsPerMatch])
+  }, [tournament.id])
 
   // Save boardResults to localStorage whenever it changes
   useEffect(() => {
@@ -238,154 +132,41 @@ export default function BoardEntry({ tournament, onBack }: Props) {
   // Handler for submitting a board result and updating tally
   const handleSubmitBoard = () => {
     if (data) {
-      setBoardResults((prev) => {
-        // Remove any existing entry for this board number
-        const filtered = prev.filter((r: any) => r.board !== boardNumber)
-        const updated = [
-          ...filtered,
-          {
-            board: boardNumber,
-            contract,
-            declarer,
-            result,
-            vulnerability,
-            doubled,
-            imp: data.imp,
-            hcp: manualHcp, // Always store N/S HCP input
-            actualScore: data.actualScore,
-          },
-        ]
-        // Sort by board number ascending
-        updated.sort((a, b) => a.board - b.board)
-        // If all boards are played after this entry, show popup
-        if (updated.length === boardsPerMatch) {
-          setShowEndPopup(true);
-        }
-        return updated
+      setImpTally((prev) => prev + data.imp)
+      setBoardsPlayed((prev) => prev + 1)
+      setBoardNumber((prev) => {
+        const next = prev + 1
+        setVulnerability(getBoardVulnerability(next))
+        return next
       })
-
-      // Find the next unplayed board number (prefer next higher, else lowest)
-      const playedBoards = boardResults.map((r: any) => r.board);
-      let nextBoard = null;
-      // Try to find the next higher unplayed board
-      for (let i = boardNumber + 1; i <= boardsPerMatch; i++) {
-        if (!playedBoards.includes(i)) {
-          nextBoard = i;
-          break;
-        }
-      }
-      // If none higher, find the lowest unplayed board
-      if (nextBoard === null) {
-        for (let i = 1; i < boardNumber; i++) {
-          if (!playedBoards.includes(i)) {
-            nextBoard = i;
-            break;
-          }
-        }
-      }
-      // If all boards are played, stay on current board
-      if (nextBoard === null) {
-        // Do not advance
-      } else {
-        setBoardNumber(nextBoard);
-        setVulnerability(getBoardVulnerability(nextBoard));
-        // Reset entry fields for next board
-        setContractLevel(1)
-        setContractSuit('C')
-        setDeclarer('N')
-        setResult(0)
-        setDoubled(null)
-        setManualHcp(20);
-      }
+      setBoardResults((prev) => [
+        ...prev,
+        {
+          board: boardNumber,
+          contract,
+          declarer,
+          result,
+          vulnerability,
+          doubled,
+          imp: data.imp,
+          hcp: data.declaringHcp,
+          actualScore: data.actualScore,
+        },
+      ])
+      // Reset entry fields for next board
+      setContractLevel(1)
+      setContractSuit('C')
+      setDeclarer('N')
+      setResult(0)
+      setDoubled(null)
+      setManualHcp(24)
     }
   }
-  // Handler for extending tournament
-  const handleExtendTournament = () => {
-    setBoardsPerMatch(9999);
-    setShowEndPopup(false);
-    // Find next unplayed board
-    let next = 1;
-    while (boardResults.some((r: any) => r.board === next)) next++;
-    setBoardNumber(next);
-    setVulnerability(getBoardVulnerability(next));
-    setContractLevel(1);
-    setContractSuit('C');
-    setDeclarer('N');
-    setResult(0);
-    setDoubled(null);
-    setManualHcp(20);
-  };
 
-  // Handler for going back (corrections)
-  const handleGoBack = () => {
-    setShowEndPopup(false);
-  };
-
-  // Handler for going back to tournaments
-  const handleBackToTournaments = () => {
-    setShowEndPopup(false);
-    onBack();
-  };
-  // Calculate VP using golden mean formula
-  const [vpNS, vpEW] = goldenMeanVP(Math.abs(impTally), boardsPerMatch);
-  const vpLabel = impTally >= 0 ? `${vpNS} - ${vpEW}` : `${vpEW} - ${vpNS}`;
-
-  const boardsLeft = boardsPerMatch - boardsPlayed
+  const boardsLeft = tournament.boardsPerMatch - boardsPlayed
 
   return (
     <div className="mx-auto w-full max-w-5xl p-3 pb-8 md:p-5">
-      {/* End of tournament popup/modal */}
-      {showEndPopup && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-6 max-w-lg w-full">
-            <h2 className="text-2xl font-bold mb-2">Tournament Complete</h2>
-            <div className="mb-2">Total IMPs: <strong>{impTally}</strong></div>
-            <div className="mb-2">Victory Points: <strong>{vpLabel}</strong></div>
-            <div className="mb-4">
-              <h3 className="font-semibold mb-1">Results Table</h3>
-              <table className="min-w-full border text-sm">
-                <thead>
-                  <tr className="bg-slate-100 dark:bg-slate-800">
-                    <th className="border px-2 py-1">#</th>
-                    <th className="border px-2 py-1">N/S HCP</th>
-                    <th className="border px-2 py-1">Contract</th>
-                    <th className="border px-2 py-1">Declarer</th>
-                    <th className="border px-2 py-1">Result</th>
-                    <th className="border px-2 py-1">Vul</th>
-                    <th className="border px-2 py-1">Dbl</th>
-                    <th className="border px-2 py-1">IMP</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {boardResults.map((r: any) => (
-                    <tr key={r.board}>
-                      <td className="border px-2 py-1">{r.board}</td>
-                      <td className="border px-2 py-1">{r.hcp}</td>
-                      <td className="border px-2 py-1">{r.contract}</td>
-                      <td className="border px-2 py-1">{r.declarer}</td>
-                      <td className="border px-2 py-1">{r.result} ({r.actualScore >= 0 ? '+' : ''}{r.actualScore})</td>
-                      <td className="border px-2 py-1">{r.vulnerability}</td>
-                      <td className="border px-2 py-1">{r.doubled || '-'}</td>
-                      <td className="border px-2 py-1">{r.imp}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className="bg-slate-200 dark:bg-slate-900 font-bold">
-                    <td className="border px-2 py-1 text-right" colSpan={7}>Total IMP</td>
-                    <td className="border px-2 py-1">{impTally}</td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-            <div className="flex gap-2 mt-4">
-              <button className="bg-blue-600 text-white px-4 py-2 rounded font-semibold" onClick={handleBackToTournaments}>Back to Tournaments</button>
-              <button className="bg-green-600 text-white px-4 py-2 rounded font-semibold" onClick={handleExtendTournament}>Extend Tournament</button>
-              <button className="bg-gray-400 text-white px-4 py-2 rounded font-semibold" onClick={handleGoBack}>Go Back</button>
-            </div>
-          </div>
-        </div>
-      )}
       <header className="mb-4 rounded-3xl border border-slate-200 bg-white p-4 shadow-sm dark:border-slate-700 dark:bg-slate-900 md:p-6">
         <div className="flex gap-4 mb-2">
           <div className="text-sm text-slate-700 dark:text-slate-200">
@@ -393,9 +174,6 @@ export default function BoardEntry({ tournament, onBack }: Props) {
           </div>
           <div className="text-sm text-slate-700 dark:text-slate-200">
             <strong>Total IMP:</strong> {impTally}
-          </div>
-          <div className="text-sm text-slate-700 dark:text-slate-200">
-            <strong>Victory Points:</strong> {vpLabel}
           </div>
           <div className="text-sm text-slate-700 dark:text-slate-200">
             <strong>Boards left:</strong> {boardsLeft}
@@ -449,22 +227,13 @@ export default function BoardEntry({ tournament, onBack }: Props) {
               <input
                 type="number"
                 min={1}
-                max={boardsPerMatch === 9999 ? undefined : boardsPerMatch}
+                max={tournament.boardsPerMatch}
                 className="ml-1 w-16 rounded border border-slate-300 p-1 text-slate-900 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-                value={boardNumber === null ? '' : boardNumber}
+                value={boardNumber}
                 onChange={e => {
-                  const val = e.target.value;
-                  if (val === '') {
-                    setBoardNumber(null as any); // allow empty
-                  } else {
-                    let n = Number(val);
-                    if (boardsPerMatch === 9999) {
-                      n = Math.max(1, n);
-                    } else {
-                      n = Math.max(1, Math.min(n, boardsPerMatch));
-                    }
-                    setBoardNumber(n);
-                  }
+                  const n = Math.max(1, Math.min(Number(e.target.value), tournament.boardsPerMatch))
+                  setBoardNumber(n)
+                  setVulnerability(getBoardVulnerability(n))
                 }}
               />
             </label>
@@ -480,6 +249,44 @@ export default function BoardEntry({ tournament, onBack }: Props) {
               Enter Board Result
             </button>
           </div>
+
+          {boardResults.length > 0 && (
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-2">Board Results</h3>
+              <table className="min-w-full border text-sm">
+                <thead>
+                  <tr className="bg-slate-100 dark:bg-slate-800">
+                    <th className="border px-2 py-1">#</th>
+                    <th className="border px-2 py-1">Contract</th>
+                    <th className="border px-2 py-1">Declarer</th>
+                    <th className="border px-2 py-1">Result</th>
+                    <th className="border px-2 py-1">Vul</th>
+                    <th className="border px-2 py-1">Dbl</th>
+                    <th className="border px-2 py-1">IMP</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {boardResults.map((r) => (
+                    <tr key={r.board}>
+                      <td className="border px-2 py-1">{r.board}</td>
+                      <td className="border px-2 py-1">{r.contract} ({r.hcp}HCP)</td>
+                      <td className="border px-2 py-1">{r.declarer}</td>
+                      <td className="border px-2 py-1">{r.result} ({r.actualScore >= 0 ? '+' : ''}{r.actualScore})</td>
+                      <td className="border px-2 py-1">{r.vulnerability}</td>
+                      <td className="border px-2 py-1">{r.doubled || '-'}</td>
+                      <td className="border px-2 py-1">{r.imp}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="bg-slate-200 dark:bg-slate-900 font-bold">
+                    <td className="border px-2 py-1 text-right" colSpan={6}>Total IMP</td>
+                    <td className="border px-2 py-1">{boardResults.reduce((sum, r) => sum + r.imp, 0)}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          )}
 
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <p className="text-xs text-slate-500 dark:text-slate-400 md:col-span-2">
@@ -597,58 +404,11 @@ export default function BoardEntry({ tournament, onBack }: Props) {
                 min={0}
                 max={40}
                 className="mt-1 block w-full rounded-lg border border-slate-300 bg-white p-2.5 text-slate-900 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:focus:ring-blue-900"
-                value={manualHcp === null ? '' : manualHcp}
-                onChange={event => {
-                  const val = event.target.value;
-                  if (val === '') {
-                    setManualHcp(null as any); // allow empty
-                  } else {
-                    setManualHcp(Number(val));
-                  }
-                }}
+                value={manualHcp}
+                onChange={(event) => setManualHcp(Number(event.target.value))}
               />
             </label>
           </div>
-
-          {boardResults.length > 0 && (
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold mb-2">Board Results</h3>
-              <table className="min-w-full border text-sm">
-                <thead>
-                  <tr className="bg-slate-100 dark:bg-slate-800">
-                    <th className="border px-2 py-1">#</th>
-                    <th className="border px-2 py-1">N/S HCP</th>
-                    <th className="border px-2 py-1">Contract</th>
-                    <th className="border px-2 py-1">Declarer</th>
-                    <th className="border px-2 py-1">Result</th>
-                    <th className="border px-2 py-1">Vul</th>
-                    <th className="border px-2 py-1">Dbl</th>
-                    <th className="border px-2 py-1">IMP</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {boardResults.map((r: any) => (
-                    <tr key={r.board}>
-                      <td className="border px-2 py-1">{r.board}</td>
-                      <td className="border px-2 py-1">{r.hcp}</td>
-                      <td className="border px-2 py-1">{r.contract}</td>
-                      <td className="border px-2 py-1">{r.declarer}</td>
-                      <td className="border px-2 py-1">{r.result} ({r.actualScore >= 0 ? '+' : ''}{r.actualScore})</td>
-                      <td className="border px-2 py-1">{r.vulnerability}</td>
-                      <td className="border px-2 py-1">{r.doubled || '-'}</td>
-                      <td className="border px-2 py-1">{r.imp}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot>
-                  <tr className="bg-slate-200 dark:bg-slate-900 font-bold">
-                    <td className="border px-2 py-1 text-right" colSpan={7}>Total IMP</td>
-                    <td className="border px-2 py-1">{boardResults.reduce((sum, r) => sum + r.imp, 0)}</td>
-                  </tr>
-                </tfoot>
-              </table>
-            </div>
-          )}
 
           <div className="mt-4">
             <button
@@ -696,5 +456,5 @@ export default function BoardEntry({ tournament, onBack }: Props) {
         {data ? <ScoreCard data={data} /> : null}
       </div>
     </div>
-  );
+  )
 }
