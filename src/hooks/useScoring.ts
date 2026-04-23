@@ -45,7 +45,7 @@ export function useScoring(input: UseScoringInput): {
         input.schema,
       )
 
-      let actualScore = computeActualScore(
+      const actualScore = computeActualScore(
         input.contract,
         input.result,
         input.vulnerability,

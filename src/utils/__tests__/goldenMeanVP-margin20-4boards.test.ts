@@ -24,8 +24,8 @@ function goldenMeanVP(margin: number, boards: number): [number, number] {
   let idx = Math.round(margin);
   if (idx < 0) idx = 0;
   if (idx > Math.ceil(B)) idx = Math.ceil(B);
-  let vpWinner = vpArr[idx];
-  let vpLoser = Math.round((20 - vpWinner) * 100) / 100;
+  const vpWinner = vpArr[idx];
+  const vpLoser = Math.round((20 - vpWinner) * 100) / 100;
   return [vpWinner, vpLoser];
 }
 

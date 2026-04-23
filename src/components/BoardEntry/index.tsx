@@ -34,7 +34,29 @@ export default function BoardEntry({ tournament, onBack }: Props) {
   const [boardsPlayed, setBoardsPlayed] = useState(0)
   // Prepare for sections: results are stored as { [tournamentId]: { [sectionId]: BoardResult[] } }
   const sectionId = 'main' // Placeholder for future section support
-  const [boardResults, setBoardResults] = useState<any[]>([])
+
+  interface BoardResult {
+    board: number
+    contract: string
+    declarer: string
+    result: number
+    vulnerability: Vulnerability
+    doubled: Doubled
+    imp: number
+    hcp: number
+    actualScore: number
+  }
+
+  const [boardResults, setBoardResults] = useState<BoardResult[]>(() => {
+    const key = `boardResults:${tournament.id}`
+    const stored = localStorage.getItem(key)
+    if (stored) {
+      try {
+        return (JSON.parse(stored)['main'] as BoardResult[]) || []
+      } catch { /* ignore */ }
+    }
+    return []
+  })
   const datumSchema = tournament.datumSchema
   const { isDark, toggleTheme } = useTheme()
   const { language, setLanguage, t } = useI18n()
@@ -67,18 +89,6 @@ export default function BoardEntry({ tournament, onBack }: Props) {
   )
 
 
-  // Load boardResults from localStorage on mount
-  useEffect(() => {
-    const key = `boardResults:${tournament.id}`
-    const stored = localStorage.getItem(key)
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored)
-        setBoardResults(parsed[sectionId] || [])
-      } catch {}
-    }
-  }, [tournament.id])
-
   // Save boardResults to localStorage whenever it changes
   useEffect(() => {
     const key = `boardResults:${tournament.id}`
@@ -88,6 +98,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
 
   useEffect(() => {
     if (result < -maxUnderTricks || result > maxOverTricks) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setResult(0)
     }
   }, [maxOverTricks, maxUnderTricks, result])
