@@ -33,8 +33,7 @@ const MODERN_TABLE: Record<number, DatumRow> = {
   33: { nv: 1000, vul: 1390 },
   34: { nv: 1230, vul: 1430 },
   35: { nv: 1440, vul: 2140 },
-  36: { nv: 1510, vul: 2210 },
-  37: { nv: 2220, vul: 2980 },
+  37: { nv: 1510, vul: 2210 },
 }
 
 const CLASSIC_TABLE: Record<number, DatumRow> = {
