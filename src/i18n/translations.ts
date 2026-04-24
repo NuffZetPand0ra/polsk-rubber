@@ -15,6 +15,18 @@ export type TranslationKey =
   | 'schema.label'
   | 'schema.modern'
   | 'schema.classic'
+  | 'schema.custom'
+  | 'customDatum.upload'
+  | 'customDatum.useCustom'
+  | 'customDatum.title'
+  | 'customDatum.titlePlaceholder'
+  | 'customDatum.pasteLabel'
+  | 'customDatum.pastePlaceholder'
+  | 'customDatum.applyText'
+  | 'customDatum.hint'
+  | 'customDatum.loaded'
+  | 'customDatum.required'
+  | 'customDatum.errorPrefix'
   | 'field.contract'
   | 'field.contractLevel'
   | 'field.contractSuit'
@@ -85,6 +97,18 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'schema.label': 'Datum-skema',
     'schema.modern': 'Moderne',
     'schema.classic': 'Klassisk',
+    'schema.custom': 'Brugerdefineret',
+    'customDatum.upload': 'Upload datum-fil (CSV/TXT)',
+    'customDatum.useCustom': 'Brug brugerdefineret datum-format',
+    'customDatum.title': 'Titel for brugerdefineret datum',
+    'customDatum.titlePlaceholder': 'Fx Klub Datum 2026',
+    'customDatum.pasteLabel': 'Eller indsat datum-tekst',
+    'customDatum.pastePlaceholder': 'HCP, non vul, vul\n20,0,0\n21,90,90',
+    'customDatum.applyText': 'Gem indsatte datum-data',
+    'customDatum.hint': 'Kolonner: HCP, non vul, vul. Komma eller semikolon. Header er valgfri.',
+    'customDatum.loaded': 'Brugerdefineret datum-skema er indlaest.',
+    'customDatum.required': 'Upload eller indsat et gyldigt brugerdefineret datum-skema for at fortsaette.',
+    'customDatum.errorPrefix': 'Kunne ikke indlaese datum-skema:',
     'field.contract': 'Kontrakt (fx 4H, 3NT)',
     'field.contractLevel': 'Kontrakttrin',
     'field.contractSuit': 'Kontraktfarve',
@@ -154,6 +178,18 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'schema.label': 'Datum Schema',
     'schema.modern': 'Modern',
     'schema.classic': 'Classic',
+    'schema.custom': 'Custom',
+    'customDatum.upload': 'Upload datum file (CSV/TXT)',
+    'customDatum.useCustom': 'Use custom datum format',
+    'customDatum.title': 'Custom datum title',
+    'customDatum.titlePlaceholder': 'e.g. Club Datum 2026',
+    'customDatum.pasteLabel': 'Or paste datum text',
+    'customDatum.pastePlaceholder': 'HCP, non vul, vul\n20,0,0\n21,90,90',
+    'customDatum.applyText': 'Save pasted datum data',
+    'customDatum.hint': 'Columns: HCP, non vul, vul. Comma or semicolon. Header optional.',
+    'customDatum.loaded': 'Custom datum schema loaded.',
+    'customDatum.required': 'Upload or paste a valid custom datum schema to continue.',
+    'customDatum.errorPrefix': 'Could not load datum schema:',
     'field.contract': 'Contract (e.g. 4H, 3NT)',
     'field.contractLevel': 'Contract Level',
     'field.contractSuit': 'Contract Suit',

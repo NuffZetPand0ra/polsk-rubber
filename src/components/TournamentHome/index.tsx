@@ -1,7 +1,13 @@
-import { useState } from 'react'
+import { useState, type ChangeEvent } from 'react'
 import { useTournamentStore } from '../../store/tournament'
 import { useTheme } from '../../hooks/useTheme'
 import { useI18n } from '../../i18n/I18nProvider'
+import {
+  CUSTOM_DATUM_DEFAULT_TITLE,
+  hasCustomDatumTable,
+  loadCustomDatumTitle,
+  saveCustomDatumCsv,
+} from '../../data/datum-table'
 import type { DatumSchema, MatchFormat, Tournament } from '../../types'
 
 const BOARDS_OPTIONS = [8, 10, 12, 16, 20, 24, 28, 32] as const
@@ -21,16 +27,63 @@ export default function TournamentHome(props: Props) {
   const [name, setName] = useState('')
   const [boardsPerMatch, setBoardsPerMatch] = useState<number>(8)
   const [matchFormat, setMatchFormat] = useState<MatchFormat>('vp')
-  const [datumSchema, setDatumSchema] = useState<DatumSchema>('modern')
+  const [datumSchema, setDatumSchema] = useState<Exclude<DatumSchema, 'custom'>>('modern')
+  const [useCustomDatum, setUseCustomDatum] = useState(false)
+  const [customDatumTitle, setCustomDatumTitle] = useState(loadCustomDatumTitle())
+  const [customDatumText, setCustomDatumText] = useState('')
+  const [customDatumMessage, setCustomDatumMessage] = useState<string | null>(null)
+  const [customDatumMessageKind, setCustomDatumMessageKind] = useState<'success' | 'error' | null>(null)
+
+  const customDatumAvailable = hasCustomDatumTable()
+
+  const loadCustomDatumFromText = () => {
+    try {
+      const title = customDatumTitle.trim() || CUSTOM_DATUM_DEFAULT_TITLE
+      saveCustomDatumCsv(customDatumText, title)
+      setCustomDatumTitle(title)
+      setCustomDatumMessage(t('customDatum.loaded'))
+      setCustomDatumMessageKind('success')
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error'
+      setCustomDatumMessage(`${t('customDatum.errorPrefix')} ${message}`)
+      setCustomDatumMessageKind('error')
+    }
+  }
+
+  const handleCustomDatumUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) {
+      return
+    }
+
+    try {
+      const text = await file.text()
+      const title = customDatumTitle.trim() || CUSTOM_DATUM_DEFAULT_TITLE
+      saveCustomDatumCsv(text, title)
+      setCustomDatumTitle(title)
+      setCustomDatumMessage(t('customDatum.loaded'))
+      setCustomDatumMessageKind('success')
+      setCustomDatumText(text)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Unknown error'
+      setCustomDatumMessage(`${t('customDatum.errorPrefix')} ${message}`)
+      setCustomDatumMessageKind('error')
+    }
+
+    event.target.value = ''
+  }
 
   const handleCreate = () => {
     const trimmed = name.trim()
     if (!trimmed) return
-    const t2 = createTournament({ name: trimmed, boardsPerMatch, matchFormat, datumSchema })
+    if (useCustomDatum && !customDatumAvailable) return
+    const selectedSchema: DatumSchema = useCustomDatum ? 'custom' : datumSchema
+    const t2 = createTournament({ name: trimmed, boardsPerMatch, matchFormat, datumSchema: selectedSchema })
     setName('')
     setBoardsPerMatch(8)
     setMatchFormat('vp')
     setDatumSchema('modern')
+    setUseCustomDatum(false)
     setShowForm(false)
     onOpen(t2)
   }
@@ -142,21 +195,87 @@ export default function TournamentHome(props: Props) {
             <label className="text-sm text-slate-700 dark:text-slate-200">
               {t('schema.label')}
               <select
-                className={selectClass}
+                className={`${selectClass} ${useCustomDatum ? 'cursor-not-allowed bg-slate-100 text-slate-400 dark:bg-slate-700 dark:text-slate-500' : ''}`}
                 value={datumSchema}
-                onChange={(e) => setDatumSchema(e.target.value as DatumSchema)}
+                onChange={(e) => setDatumSchema(e.target.value as Exclude<DatumSchema, 'custom'>)}
+                disabled={useCustomDatum}
               >
                 <option value="modern">{t('schema.modern')}</option>
                 <option value="classic">{t('schema.classic')}</option>
               </select>
             </label>
+
+            <label className="text-sm text-slate-700 dark:text-slate-200 sm:col-span-2">
+              <input
+                type="checkbox"
+                checked={useCustomDatum}
+                onChange={(event) => setUseCustomDatum(event.target.checked)}
+                className="mr-2 h-4 w-4 align-middle"
+              />
+              {t('customDatum.useCustom')}
+            </label>
+
+            {useCustomDatum ? (
+              <div className="sm:col-span-2">
+                <label className="text-sm text-slate-700 dark:text-slate-200">
+                  {t('customDatum.title')}
+                  <input
+                    type="text"
+                    className={inputClass}
+                    value={customDatumTitle}
+                    onChange={(event) => setCustomDatumTitle(event.target.value)}
+                    placeholder={t('customDatum.titlePlaceholder')}
+                  />
+                </label>
+                <label className="text-sm text-slate-700 dark:text-slate-200">
+                  {t('customDatum.upload')}
+                  <input
+                    type="file"
+                    accept=".csv,text/csv,text/plain"
+                    className={inputClass}
+                    onChange={handleCustomDatumUpload}
+                  />
+                </label>
+                <label className="mt-3 block text-sm text-slate-700 dark:text-slate-200">
+                  {t('customDatum.pasteLabel')}
+                  <textarea
+                    className={`${inputClass} min-h-28`}
+                    placeholder={t('customDatum.pastePlaceholder')}
+                    value={customDatumText}
+                    onChange={(event) => setCustomDatumText(event.target.value)}
+                  />
+                </label>
+                <div className="mt-2 flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={loadCustomDatumFromText}
+                    className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm hover:bg-slate-50 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700"
+                  >
+                    {t('customDatum.applyText')}
+                  </button>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">{t('customDatum.hint')}</p>
+                </div>
+                {!customDatumAvailable ? (
+                  <p className="mt-1 text-xs text-red-600 dark:text-red-400">{t('customDatum.required')}</p>
+                ) : null}
+                {customDatumMessage ? (
+                  <p className={`mt-1 text-xs ${
+                    customDatumMessageKind === 'error'
+                      ? 'text-red-600 dark:text-red-400'
+                      : 'text-emerald-700 dark:text-emerald-300'
+                  }`}>
+                    {customDatumMessage}
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
           </div>
 
           <div className="mt-5 flex gap-2">
             <button
               type="button"
               onClick={handleCreate}
-              disabled={!name.trim()}
+              disabled={!name.trim() || (useCustomDatum && !customDatumAvailable)}
               className="inline-flex items-center rounded-lg border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-100 disabled:opacity-40 dark:border-blue-700 dark:bg-blue-900/20 dark:text-blue-200 dark:hover:bg-blue-900/30"
             >
               {t('tournament.create')}
@@ -201,7 +320,11 @@ export default function TournamentHome(props: Props) {
                     {tournament.matchFormat === 'vp'
                       ? t('tournament.format.vp')
                       : t('tournament.format.carryOver')}{' '}
-                    · {tournament.datumSchema === 'modern' ? t('schema.modern') : t('schema.classic')}
+                    · {tournament.datumSchema === 'modern'
+                      ? t('schema.modern')
+                      : tournament.datumSchema === 'classic'
+                        ? t('schema.classic')
+                        : t('schema.custom')}
                   </p>
                 </div>
                 <div className="flex shrink-0 gap-2">
