@@ -58,8 +58,29 @@ const CLASSIC_TABLE: Record<number, DatumRow> = {
   37: { nv: 2220, vul: 2980 },
 }
 
+const POLSK_RUBBER_TABLE: Record<number, DatumRow> = {
+  20: { nv: 0, vul: 0 },
+  21: { nv: 50, vul: 50 },
+  22: { nv: 90, vul: 90 },
+  23: { nv: 130, vul: 130 },
+  24: { nv: 220, vul: 260 },
+  25: { nv: 300, vul: 400 },
+  26: { nv: 400, vul: 600 },
+  27: { nv: 430, vul: 630 },
+  28: { nv: 460, vul: 660 },
+  29: { nv: 460, vul: 690 },
+  30: { nv: 520, vul: 720 },
+  31: { nv: 700, vul: 1000 },
+  32: { nv: 900, vul: 1350 },
+  33: { nv: 990, vul: 1440 },
+  34: { nv: 1250, vul: 1800 },
+  35: { nv: 1400, vul: 2100 },
+  36: { nv: 1500, vul: 2200 },
+}
+
 const BUILTIN_TABLES = {
   modern: MODERN_TABLE,
+  'polsk-rubber': POLSK_RUBBER_TABLE,
   classic: CLASSIC_TABLE,
 } satisfies Record<Exclude<DatumSchema, 'custom'>, Record<number, DatumRow>>
 

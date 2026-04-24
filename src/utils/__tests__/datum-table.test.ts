@@ -59,6 +59,16 @@ describe('getDatum', () => {
     expect(getDatum(30, true, 'classic')).toBe(690)
   })
 
+  it('returns polsk rubber values', () => {
+    expect(getDatum(24, false, 'polsk-rubber')).toBe(220)
+    expect(getDatum(32, true, 'polsk-rubber')).toBe(1350)
+  })
+
+  it('uses nearest lower row for polsk rubber gaps', () => {
+    expect(getDatum(37, true, 'polsk-rubber')).toBe(2200)
+    expect(getDatum(40, false, 'polsk-rubber')).toBe(1500)
+  })
+
   it('uses highest defined row up to 40 HCP', () => {
     expect(getDatum(39, false, 'modern')).toBe(2220)
     expect(getDatum(40, true, 'classic')).toBe(2980)

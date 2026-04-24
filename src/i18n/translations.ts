@@ -14,6 +14,7 @@ export type TranslationKey =
   | 'section.boardResult'
   | 'schema.label'
   | 'schema.modern'
+  | 'schema.polskRubber'
   | 'schema.classic'
   | 'schema.custom'
   | 'customDatum.upload'
@@ -96,6 +97,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'section.boardResult': 'Spilresultat',
     'schema.label': 'Datum-skema',
     'schema.modern': 'Moderne',
+    'schema.polskRubber': 'Polsk Rubber',
     'schema.classic': 'Klassisk',
     'schema.custom': 'Brugerdefineret',
     'customDatum.upload': 'Upload datum-fil (CSV/TXT)',
@@ -177,6 +179,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'section.boardResult': 'Board Result',
     'schema.label': 'Datum Schema',
     'schema.modern': 'Modern',
+    'schema.polskRubber': 'Polsk Rubber',
     'schema.classic': 'Classic',
     'schema.custom': 'Custom',
     'customDatum.upload': 'Upload datum file (CSV/TXT)',

@@ -201,6 +201,7 @@ export default function TournamentHome(props: Props) {
                 disabled={useCustomDatum}
               >
                 <option value="modern">{t('schema.modern')}</option>
+                <option value="polsk-rubber">{t('schema.polskRubber')}</option>
                 <option value="classic">{t('schema.classic')}</option>
               </select>
             </label>
@@ -322,7 +323,9 @@ export default function TournamentHome(props: Props) {
                       : t('tournament.format.carryOver')}{' '}
                     · {tournament.datumSchema === 'modern'
                       ? t('schema.modern')
-                      : tournament.datumSchema === 'classic'
+                      : tournament.datumSchema === 'polsk-rubber'
+                        ? t('schema.polskRubber')
+                        : tournament.datumSchema === 'classic'
                         ? t('schema.classic')
                         : t('schema.custom')}
                   </p>

@@ -437,6 +437,8 @@ export default function BoardEntry({ tournament, onBack }: Props) {
             <p className="text-xs text-slate-500 dark:text-slate-400 md:col-span-2">
               {t('schema.label')}: {datumSchema === 'modern'
                 ? t('schema.modern')
+                : datumSchema === 'polsk-rubber'
+                  ? t('schema.polskRubber')
                 : datumSchema === 'classic'
                   ? t('schema.classic')
                   : `${t('schema.custom')} (${customDatumTitle})`}
