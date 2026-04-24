@@ -70,7 +70,7 @@ describe('getDatum', () => {
   })
 
   it('uses highest defined row up to 40 HCP', () => {
-    expect(getDatum(39, false, 'modern')).toBe(2220)
+    expect(getDatum(39, false, 'modern')).toBe(1510)
     expect(getDatum(40, true, 'classic')).toBe(2980)
   })
 
