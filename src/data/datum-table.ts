@@ -6,8 +6,21 @@ interface DatumRow {
 }
 
 interface CustomDatumStorage {
+  slug: string
   title: string
   table: Record<number, DatumRow>
+  updatedAt: string
+}
+
+interface CustomDatumLibraryStorage {
+  activeSlug: string
+  sheets: Record<string, Omit<CustomDatumStorage, 'slug'>>
+}
+
+export interface CustomDatumSheetSummary {
+  slug: string
+  title: string
+  updatedAt: string
 }
 
 export interface DatumPreviewRow {
@@ -84,6 +97,7 @@ const BUILTIN_TABLES = {
 } satisfies Record<Exclude<DatumSchema, 'custom'>, Record<number, DatumRow>>
 
 export const CUSTOM_DATUM_STORAGE_KEY = 'polsk-rubber:datum:custom:v1'
+export const CUSTOM_DATUM_LIBRARY_STORAGE_KEY = 'polsk-rubber:datum:custom-library:v2'
 export const CUSTOM_DATUM_DEFAULT_TITLE = 'Custom datum'
 
 const TABLES: Record<DatumSchema, Record<number, DatumRow>> = {
@@ -99,6 +113,119 @@ function getSortedHcpValues(table: Record<number, DatumRow>): number[] {
     .map((key) => Number(key))
     .filter((value) => Number.isFinite(value))
     .sort((a, b) => a - b)
+}
+
+function slugifyCustomDatumTitle(title: string): string {
+  const slug = title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
+  return slug || 'custom-datum'
+}
+
+function normalizeDatumTable(rawTable: unknown): Record<number, DatumRow> {
+  const entries = Object.entries((rawTable ?? {}) as Record<string, DatumRow>)
+  const normalized: Record<number, DatumRow> = {}
+
+  for (const [hcpRaw, row] of entries) {
+    const hcp = Number(hcpRaw)
+    if (!Number.isInteger(hcp) || !row || !Number.isFinite(row.nv) || !Number.isFinite(row.vul)) {
+      return {}
+    }
+    normalized[hcp] = { nv: row.nv, vul: row.vul }
+  }
+
+  return normalized
+}
+
+function loadCustomDatumLibraryConfig(): CustomDatumLibraryStorage {
+  const raw = localStorage.getItem(CUSTOM_DATUM_LIBRARY_STORAGE_KEY)
+  if (raw) {
+    try {
+      const parsed = JSON.parse(raw) as Partial<CustomDatumLibraryStorage>
+      const parsedSheets = parsed?.sheets ?? {}
+      const normalizedSheets: CustomDatumLibraryStorage['sheets'] = {}
+
+      for (const [slug, sheet] of Object.entries(parsedSheets)) {
+        if (!sheet || typeof sheet.title !== 'string') {
+          continue
+        }
+
+        const table = normalizeDatumTable(sheet.table)
+        if (getSortedHcpValues(table).length === 0) {
+          continue
+        }
+
+        normalizedSheets[slug] = {
+          title: sheet.title.trim() || CUSTOM_DATUM_DEFAULT_TITLE,
+          table,
+          updatedAt:
+            typeof sheet.updatedAt === 'string' && sheet.updatedAt.trim().length > 0
+              ? sheet.updatedAt
+              : new Date(0).toISOString(),
+        }
+      }
+
+      const activeSlug =
+        typeof parsed.activeSlug === 'string' && normalizedSheets[parsed.activeSlug]
+          ? parsed.activeSlug
+          : Object.keys(normalizedSheets)[0] ?? ''
+
+      return {
+        activeSlug,
+        sheets: normalizedSheets,
+      }
+    } catch {
+      // fall through to legacy migration
+    }
+  }
+
+  const legacyRaw = localStorage.getItem(CUSTOM_DATUM_STORAGE_KEY)
+  if (!legacyRaw) {
+    return { activeSlug: '', sheets: {} }
+  }
+
+  try {
+    const parsed = JSON.parse(legacyRaw) as unknown
+    const maybeConfig = parsed as Partial<CustomDatumStorage>
+    const title =
+      maybeConfig && typeof maybeConfig.title === 'string' && maybeConfig.title.trim()
+        ? maybeConfig.title.trim()
+        : CUSTOM_DATUM_DEFAULT_TITLE
+
+    const rawTable =
+      maybeConfig && typeof maybeConfig === 'object' && maybeConfig.table
+        ? maybeConfig.table
+        : (parsed as Record<string, DatumRow>)
+
+    const table = normalizeDatumTable(rawTable)
+    if (getSortedHcpValues(table).length === 0) {
+      return { activeSlug: '', sheets: {} }
+    }
+
+    const slug = slugifyCustomDatumTitle(title)
+    const migrated: CustomDatumLibraryStorage = {
+      activeSlug: slug,
+      sheets: {
+        [slug]: {
+          title,
+          table,
+          updatedAt: new Date().toISOString(),
+        },
+      },
+    }
+
+    localStorage.setItem(CUSTOM_DATUM_LIBRARY_STORAGE_KEY, JSON.stringify(migrated))
+    return migrated
+  } catch {
+    return { activeSlug: '', sheets: {} }
+  }
+}
+
+function saveCustomDatumLibraryConfig(config: CustomDatumLibraryStorage): void {
+  localStorage.setItem(CUSTOM_DATUM_LIBRARY_STORAGE_KEY, JSON.stringify(config))
 }
 
 function getActiveTable(schema: DatumSchema): Record<number, DatumRow> {
@@ -158,77 +285,86 @@ export function parseDatumCsv(text: string): Record<number, DatumRow> {
   return table
 }
 
-export function saveCustomDatumTable(table: Record<number, DatumRow>): void {
-  const existing = loadCustomDatumConfig()
-  const payload: CustomDatumStorage = {
-    title: existing.title || CUSTOM_DATUM_DEFAULT_TITLE,
+export function listCustomDatumSheets(): CustomDatumSheetSummary[] {
+  const config = loadCustomDatumLibraryConfig()
+  return Object.entries(config.sheets)
+    .map(([slug, sheet]) => ({
+      slug,
+      title: sheet.title,
+      updatedAt: sheet.updatedAt,
+    }))
+    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+}
+
+export function saveCustomDatumTable(table: Record<number, DatumRow>, title?: string): string {
+  const config = loadCustomDatumLibraryConfig()
+  const normalizedTitle = title?.trim() || config.sheets[config.activeSlug]?.title || CUSTOM_DATUM_DEFAULT_TITLE
+  const slug = slugifyCustomDatumTitle(normalizedTitle)
+
+  config.sheets[slug] = {
+    title: normalizedTitle,
     table,
+    updatedAt: new Date().toISOString(),
   }
-  localStorage.setItem(CUSTOM_DATUM_STORAGE_KEY, JSON.stringify(payload))
+  config.activeSlug = slug
+
+  saveCustomDatumLibraryConfig(config)
+  return slug
 }
 
-export function saveCustomDatumCsv(text: string, title?: string): void {
+export function saveCustomDatumCsv(text: string, title?: string): string {
   const parsed = parseDatumCsv(text)
-  const payload: CustomDatumStorage = {
-    title: (title?.trim() || loadCustomDatumTitle() || CUSTOM_DATUM_DEFAULT_TITLE),
-    table: parsed,
-  }
-  localStorage.setItem(CUSTOM_DATUM_STORAGE_KEY, JSON.stringify(payload))
+  return saveCustomDatumTable(parsed, title)
 }
 
-export function loadCustomDatumConfig(): CustomDatumStorage {
-  const raw = localStorage.getItem(CUSTOM_DATUM_STORAGE_KEY)
-  if (!raw) {
-    return { title: '', table: {} }
-  }
+export function loadCustomDatumConfig(customSlug?: string): CustomDatumStorage {
+  const config = loadCustomDatumLibraryConfig()
+  const slug = customSlug && config.sheets[customSlug] ? customSlug : config.activeSlug
+  const sheet = slug ? config.sheets[slug] : null
 
-  try {
-    const parsed = JSON.parse(raw) as unknown
-
-    // Backward compatibility: old format stored only the table object.
-    const legacyTable = (parsed as Record<string, DatumRow>)
-    const maybeConfig = parsed as Partial<CustomDatumStorage>
-    const rawTable =
-      maybeConfig && typeof maybeConfig === 'object' && maybeConfig.table
-        ? maybeConfig.table
-        : legacyTable
-
-    const entries = Object.entries(rawTable ?? {})
-    const normalized: Record<number, DatumRow> = {}
-
-    for (const [hcpRaw, row] of entries) {
-      const hcp = Number(hcpRaw)
-      if (!Number.isInteger(hcp) || !row || !Number.isFinite(row.nv) || !Number.isFinite(row.vul)) {
-        return { title: '', table: {} }
-      }
-      normalized[hcp] = { nv: row.nv, vul: row.vul }
+  if (!sheet) {
+    return {
+      slug: '',
+      title: '',
+      table: {},
+      updatedAt: '',
     }
+  }
 
-    const title =
-      maybeConfig && typeof maybeConfig.title === 'string' && maybeConfig.title.trim()
-        ? maybeConfig.title.trim()
-        : ''
-
-    return { title, table: normalized }
-  } catch {
-    return { title: '', table: {} }
+  return {
+    slug,
+    title: sheet.title,
+    table: sheet.table,
+    updatedAt: sheet.updatedAt,
   }
 }
 
-export function loadCustomDatumTable(): Record<number, DatumRow> {
-  return loadCustomDatumConfig().table
+export function loadCustomDatumTable(customSlug?: string): Record<number, DatumRow> {
+  return loadCustomDatumConfig(customSlug).table
 }
 
-export function loadCustomDatumTitle(): string {
-  return loadCustomDatumConfig().title || CUSTOM_DATUM_DEFAULT_TITLE
+export function loadCustomDatumCsvText(customSlug?: string): string {
+  const table = loadCustomDatumTable(customSlug)
+  const hcpValues = getSortedHcpValues(table)
+
+  return hcpValues
+    .map((hcp) => {
+      const row = table[hcp]
+      return `${hcp},${row.nv},${row.vul}`
+    })
+    .join('\n')
 }
 
-export function hasCustomDatumTable(): boolean {
-  return getSortedHcpValues(loadCustomDatumConfig().table).length > 0
+export function loadCustomDatumTitle(customSlug?: string): string {
+  return loadCustomDatumConfig(customSlug).title || CUSTOM_DATUM_DEFAULT_TITLE
 }
 
-export function getDatumSchemaPreview(schema: DatumSchema = 'modern'): DatumPreviewRow[] {
-  const table = getActiveTable(schema)
+export function hasCustomDatumTable(customSlug?: string): boolean {
+  return getSortedHcpValues(loadCustomDatumConfig(customSlug).table).length > 0
+}
+
+export function getDatumSchemaPreview(schema: DatumSchema = 'modern', customSlug?: string): DatumPreviewRow[] {
+  const table = schema === 'custom' ? loadCustomDatumTable(customSlug) : getActiveTable(schema)
   const hcpValues = getSortedHcpValues(table)
 
   return hcpValues.map((hcp) => {
@@ -245,12 +381,13 @@ export function getDatum(
   hcp: number,
   vul: boolean,
   schema: DatumSchema = 'modern',
+  customSlug?: string,
 ): number {
   if (hcp <= 19) {
     return 0
   }
 
-  const table = getActiveTable(schema)
+  const table = schema === 'custom' ? loadCustomDatumTable(customSlug) : getActiveTable(schema)
   const hcpValues = getSortedHcpValues(table)
   if (hcpValues.length === 0) {
     throw new Error('No datum rows are configured for selected schema.')

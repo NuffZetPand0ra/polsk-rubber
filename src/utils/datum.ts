@@ -25,14 +25,15 @@ export function getDatumForBoard(
   vulnerability: Vulnerability,
   side: Side,
   schema: DatumSchema,
+  customDatumSlug?: string,
 ): number {
   // If HCP < 20, datum should be negative (minority side)
   if (hcp < 20) {
     // Always use the other side for vulnerability and always return -datum (negative from NS perspective)
     const otherSide = side === 'NS' ? 'EW' : 'NS'
-    const datum = getDatum(20, isSideVulnerable(vulnerability, otherSide), schema)
+    const datum = getDatum(20, isSideVulnerable(vulnerability, otherSide), schema, customDatumSlug)
     return -datum
   }
-  const datum = getDatum(hcp, isSideVulnerable(vulnerability, side), schema)
+  const datum = getDatum(hcp, isSideVulnerable(vulnerability, side), schema, customDatumSlug)
   return side === 'NS' ? datum : -datum // Normalize to NS perspective
 }

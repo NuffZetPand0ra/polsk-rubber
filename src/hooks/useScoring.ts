@@ -60,6 +60,7 @@ export function useScoring(input: UseScoringInput): {
       input.vulnerability,
       majoritySide,
       input.schema,
+      input.customDatumSlug,
     )
 
 

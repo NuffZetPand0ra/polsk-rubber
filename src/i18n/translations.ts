@@ -19,6 +19,8 @@ export type TranslationKey =
   | 'schema.custom'
   | 'customDatum.upload'
   | 'customDatum.useCustom'
+  | 'customDatum.savedSheets'
+  | 'customDatum.savedSheetsPlaceholder'
   | 'customDatum.title'
   | 'customDatum.titlePlaceholder'
   | 'customDatum.pasteLabel'
@@ -122,6 +124,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'schema.custom': 'Brugerdefineret',
     'customDatum.upload': 'Upload datum-fil (CSV/TXT)',
     'customDatum.useCustom': 'Brug brugerdefineret datum-format',
+    'customDatum.savedSheets': 'Gemte brugerdefinerede skemaer',
+    'customDatum.savedSheetsPlaceholder': 'Vælg gemt skema (valgfrit)',
     'customDatum.title': 'Titel for brugerdefineret datum',
     'customDatum.titlePlaceholder': 'Fx Klub Datum 2026',
     'customDatum.pasteLabel': 'Eller indsat datum-tekst',
@@ -224,6 +228,8 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'schema.custom': 'Custom',
     'customDatum.upload': 'Upload datum file (CSV/TXT)',
     'customDatum.useCustom': 'Use custom datum format',
+    'customDatum.savedSheets': 'Saved custom schemas',
+    'customDatum.savedSheetsPlaceholder': 'Select saved schema (optional)',
     'customDatum.title': 'Custom datum title',
     'customDatum.titlePlaceholder': 'e.g. Club Datum 2026',
     'customDatum.pasteLabel': 'Or paste datum text',
