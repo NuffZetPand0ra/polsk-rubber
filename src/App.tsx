@@ -13,7 +13,7 @@ function App() {
   const content = showManuals
     ? <Manuals onBack={() => setShowManuals(false)} />
     : justPlay
-    ? <JustPlay />
+    ? <JustPlay onExit={() => setJustPlay(false)} />
     : activeTournament
       ? (
           <BoardEntry

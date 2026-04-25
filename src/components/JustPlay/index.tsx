@@ -1,7 +1,10 @@
-import { useState } from 'react'
 import BoardEntry from '../BoardEntry'
 
-export default function JustPlay() {
+interface Props {
+  onExit: () => void
+}
+
+export default function JustPlay({ onExit }: Props) {
   // Use a dummy tournament config for single board entry
   const dummyTournament = {
     id: 'just-play',
@@ -13,21 +16,11 @@ export default function JustPlay() {
     players: [],
     sessions: [],
   }
-  const [showEntry, setShowEntry] = useState(true)
 
-  return showEntry ? (
+  return (
     <BoardEntry
       tournament={dummyTournament}
-      onBack={() => setShowEntry(false)}
+      onBack={onExit}
     />
-  ) : (
-    <div className="flex flex-col items-center justify-center h-full p-8">
-      <button
-        className="rounded-lg bg-blue-600 text-white px-6 py-3 text-lg font-semibold shadow hover:bg-blue-700"
-        onClick={() => setShowEntry(true)}
-      >
-        Just Play Again
-      </button>
-    </div>
   )
 }
