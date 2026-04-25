@@ -348,53 +348,51 @@ export default function TournamentHome(props: Props) {
 
             {useCustomDatum ? (
               <div className="sm:col-span-2">
-                {customDatumSheets.length > 0 ? (
-                  <label className="text-sm text-slate-700 dark:text-slate-200">
-                    {t('customDatum.savedSheets')}
-                    <select
-                      className={selectClass}
-                      value={selectedDatumOption}
-                      onChange={(event) => {
-                        const selected = event.target.value
-                        setSelectedDatumOption(selected)
+                <label className="text-sm text-slate-700 dark:text-slate-200">
+                  {t('customDatum.savedSheets')}
+                  <select
+                    className={selectClass}
+                    value={selectedDatumOption}
+                    onChange={(event) => {
+                      const selected = event.target.value
+                      setSelectedDatumOption(selected)
 
-                        if (!selected) {
-                          setSelectedCustomDatumSlug('')
-                          setCustomDatumTitle('')
-                          setCustomDatumText('')
-                          return
-                        }
+                      if (!selected) {
+                        setSelectedCustomDatumSlug('')
+                        setCustomDatumTitle('')
+                        setCustomDatumText('')
+                        return
+                      }
 
-                        if (selected.startsWith('builtin:')) {
-                          const schema = selected.replace('builtin:', '') as 'modern' | 'polsk-rubber' | 'classic'
-                          setSelectedCustomDatumSlug('')
-                          setCustomDatumTitle(`(C) ${
-                            schema === 'modern'
-                              ? t('schema.modern')
-                              : schema === 'polsk-rubber'
-                                ? t('schema.polskRubber')
-                                : t('schema.classic')
-                          }`)
-                          setCustomDatumText(builtInCsvBySchema[schema])
-                          return
-                        }
+                      if (selected.startsWith('builtin:')) {
+                        const schema = selected.replace('builtin:', '') as 'modern' | 'polsk-rubber' | 'classic'
+                        setSelectedCustomDatumSlug('')
+                        setCustomDatumTitle(`(C) ${
+                          schema === 'modern'
+                            ? t('schema.modern')
+                            : schema === 'polsk-rubber'
+                              ? t('schema.polskRubber')
+                              : t('schema.classic')
+                        }`)
+                        setCustomDatumText(builtInCsvBySchema[schema])
+                        return
+                      }
 
-                        const slug = selected.replace('custom:', '')
-                        setSelectedCustomDatumSlug(slug)
+                      const slug = selected.replace('custom:', '')
+                      setSelectedCustomDatumSlug(slug)
 
-                        setCustomDatumTitle(loadCustomDatumTitle(slug))
-                        setCustomDatumText(loadCustomDatumCsvText(slug))
-                      }}
-                    >
-                      <option value="">{t('customDatum.savedSheetsPlaceholder')}</option>
-                      {dropdownOptions.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                ) : null}
+                      setCustomDatumTitle(loadCustomDatumTitle(slug))
+                      setCustomDatumText(loadCustomDatumCsvText(slug))
+                    }}
+                  >
+                    <option value="">{t('customDatum.savedSheetsPlaceholder')}</option>
+                    {dropdownOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
                 <label className="text-sm text-slate-700 dark:text-slate-200">
                   {t('customDatum.title')}
                   <input
