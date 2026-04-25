@@ -24,6 +24,7 @@ describe('ScoreCard', () => {
       actualScore: 420,
       diff: 90,
       imp: 3,
+      bam: 1,
     })
 
     expect(screen.getByText('+3')).toBeInTheDocument()
@@ -41,6 +42,7 @@ describe('ScoreCard', () => {
       actualScore: -620,
       diff: -170,
       imp: -5,
+      bam: -1,
     })
 
     expect(screen.getByText('+5')).toBeInTheDocument()
@@ -58,6 +60,7 @@ describe('ScoreCard', () => {
       actualScore: 0,
       diff: 0,
       imp: 0,
+      bam: 0,
     })
 
     expect(screen.queryByText('+0')).not.toBeInTheDocument()
