@@ -69,6 +69,11 @@ interface BoardResult {
   actualScore: number
 }
 
+interface StoredBoardResults {
+  [sectionId: string]: BoardResult[] | string | undefined
+  updatedAt?: string
+}
+
 const sectionId = 'main'
 
 export default function BoardEntry({ tournament, onBack }: Props) {
@@ -80,11 +85,27 @@ export default function BoardEntry({ tournament, onBack }: Props) {
     const stored = localStorage.getItem(key)
     if (stored) {
       try {
-        const parsed = JSON.parse(stored)
+        const parsed = JSON.parse(stored) as StoredBoardResults
         return (parsed[sectionId] as BoardResult[]) || []
       } catch { /* ignore */ }
     }
     return []
+  })
+
+  const [lastEditedAt, setLastEditedAt] = useState<string>(() => {
+    const key = `boardResults:${tournament.id}`
+    const stored = localStorage.getItem(key)
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored) as StoredBoardResults
+        if (typeof parsed.updatedAt === 'string') {
+          return parsed.updatedAt
+        }
+      } catch {
+        // ignore corrupt payload and fall back
+      }
+    }
+    return tournament.createdAt
   })
 
   const [boardNumber, setBoardNumber] = useState<number | null>(() => {
@@ -167,9 +188,9 @@ export default function BoardEntry({ tournament, onBack }: Props) {
 
   useEffect(() => {
     const key = `boardResults:${tournament.id}`
-    const toStore = { [sectionId]: boardResults }
+    const toStore = { [sectionId]: boardResults, updatedAt: lastEditedAt }
     localStorage.setItem(key, JSON.stringify(toStore))
-  }, [boardResults, tournament.id])
+  }, [boardResults, lastEditedAt, tournament.id])
 
   useEffect(() => {
     if (result < -maxUnderTricks || result > maxOverTricks) {
@@ -217,6 +238,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
 
   const handleSubmitBoard = () => {
     if (data && boardNumber !== null) {
+      setLastEditedAt(new Date().toISOString())
       setBoardResults((prev) => {
         const filtered = prev.filter((r) => r.board !== boardNumber)
         const updated = [
@@ -292,6 +314,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
       return
     }
 
+    setLastEditedAt(new Date().toISOString())
     setBoardResults((prev) => prev.filter((entry) => entry.board !== boardNumber))
     setContractLevel(1)
     setContractSuit('C')

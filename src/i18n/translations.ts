@@ -85,6 +85,9 @@ export type TranslationKey =
   | 'tournament.open'
   | 'tournament.empty'
   | 'tournament.boards'
+  | 'tournament.createdAt'
+  | 'tournament.lastEditedAt'
+  | 'tournament.boardsPlayed'
   | 'tournament.backToList'
   | 'manuals.open'
   | 'manuals.backToHome'
@@ -186,6 +189,9 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'tournament.open': 'Åbn',
     'tournament.empty': 'Ingen turneringer endnu. Opret en for at komme i gang.',
     'tournament.boards': 'spil/kamp',
+    'tournament.createdAt': 'Oprettet',
+    'tournament.lastEditedAt': 'Senest redigeret',
+    'tournament.boardsPlayed': 'Spillede spil',
     'tournament.backToList': '← Turneringer',
     'manuals.open': 'Manualer',
     'manuals.backToHome': '← Tilbage til turneringer',
@@ -286,6 +292,9 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'tournament.open': 'Open',
     'tournament.empty': 'No tournaments yet. Create one to get started.',
     'tournament.boards': 'boards/match',
+    'tournament.createdAt': 'Created',
+    'tournament.lastEditedAt': 'Last edited',
+    'tournament.boardsPlayed': 'Boards played',
     'tournament.backToList': '← Tournaments',
     'manuals.open': 'Manuals',
     'manuals.backToHome': '← Back to tournaments',

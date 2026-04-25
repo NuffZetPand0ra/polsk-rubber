@@ -49,6 +49,58 @@ export default function TournamentHome(props: Props) {
   const customDatumAvailable = hasCustomDatumTable(selectedCustomDatumSlug || undefined)
   const schemaPreviewRows = getDatumSchemaPreview(datumSchema)
 
+  const locale = language === 'da' ? 'da-DK' : 'en-GB'
+
+  const formatTimestamp = (iso: string) => {
+    const parsed = new Date(iso)
+    if (Number.isNaN(parsed.getTime())) {
+      return '—'
+    }
+    return new Intl.DateTimeFormat(locale, {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }).format(parsed)
+  }
+
+  const tournamentsWithStats = useMemo(() => {
+    return tournaments
+      .map((tournament) => {
+        const storageKey = `boardResults:${tournament.id}`
+        const stored = localStorage.getItem(storageKey)
+
+        let boardsPlayed = 0
+        let lastEditedAt = tournament.createdAt
+
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored) as {
+              main?: unknown
+              updatedAt?: unknown
+            }
+
+            if (Array.isArray(parsed.main)) {
+              boardsPlayed = parsed.main.length
+            }
+
+            if (typeof parsed.updatedAt === 'string') {
+              lastEditedAt = parsed.updatedAt
+            }
+          } catch {
+            // ignore malformed local storage and keep fallbacks
+          }
+        }
+
+        return {
+          tournament,
+          boardsPlayed,
+          lastEditedAt,
+        }
+      })
+      .sort((a, b) => {
+        return new Date(b.lastEditedAt).getTime() - new Date(a.lastEditedAt).getTime()
+      })
+  }, [tournaments])
+
   const schemaPreviewDescription =
     datumSchema === 'modern'
       ? t('preview.description.modern')
@@ -381,7 +433,7 @@ export default function TournamentHome(props: Props) {
           </p>
         ) : (
           <ul className="divide-y divide-slate-100 dark:divide-slate-800">
-            {tournaments.map((tournament) => (
+            {tournamentsWithStats.map(({ tournament, boardsPlayed, lastEditedAt }) => (
               <li key={tournament.id} className="flex items-center justify-between gap-3 px-4 py-3">
                 <div className="min-w-0">
                   <p className="truncate font-semibold text-slate-900 dark:text-slate-100">
@@ -399,6 +451,9 @@ export default function TournamentHome(props: Props) {
                         : tournament.datumSchema === 'classic'
                         ? t('schema.classic')
                         : t('schema.custom')}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                    {t('tournament.createdAt')}: {formatTimestamp(tournament.createdAt)} · {t('tournament.lastEditedAt')}: {formatTimestamp(lastEditedAt)} · {t('tournament.boardsPlayed')}: {boardsPlayed}
                   </p>
                 </div>
                 <div className="flex shrink-0 gap-2">

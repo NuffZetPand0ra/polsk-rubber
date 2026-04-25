@@ -3,12 +3,43 @@ import { persist } from 'zustand/middleware'
 import { impToVp, sumImps } from '../utils/vp'
 import type { DatumSchema, Match, MatchBoard, MatchFormat, Tournament } from '../types'
 
+const BOARD_RESULTS_PREFIX = 'boardResults:'
+const BOARD_RESULTS_RESERVED_IDS = new Set(['just-play'])
+
 // ---------------------------------------------------------------------------
 // helpers
 // ---------------------------------------------------------------------------
 
 function uid(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`
+}
+
+function hasLocalStorage(): boolean {
+  return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
+}
+
+function cleanupOrphanedBoardResultsStorage(tournaments: Tournament[]): void {
+  if (!hasLocalStorage()) {
+    return
+  }
+
+  const validTournamentIds = new Set(tournaments.map((tournament) => tournament.id))
+
+  for (let index = window.localStorage.length - 1; index >= 0; index--) {
+    const key = window.localStorage.key(index)
+    if (!key || !key.startsWith(BOARD_RESULTS_PREFIX)) {
+      continue
+    }
+
+    const tournamentId = key.slice(BOARD_RESULTS_PREFIX.length)
+    if (BOARD_RESULTS_RESERVED_IDS.has(tournamentId)) {
+      continue
+    }
+
+    if (!validTournamentIds.has(tournamentId)) {
+      window.localStorage.removeItem(key)
+    }
+  }
 }
 
 function recomputeMatch(match: Match, boardsPerMatch: number): Match {
@@ -107,6 +138,12 @@ export const useTournamentStore = create<TournamentState>()(
           activeTournamentId:
             state.activeTournamentId === id ? null : state.activeTournamentId,
         }))
+
+        if (hasLocalStorage()) {
+          window.localStorage.removeItem(`${BOARD_RESULTS_PREFIX}${id}`)
+        }
+
+        cleanupOrphanedBoardResultsStorage(get().tournaments)
       },
 
       setActiveTournament: (id) => set({ activeTournamentId: id }),
@@ -172,6 +209,11 @@ export const useTournamentStore = create<TournamentState>()(
     {
       name: 'polsk-rubber-tournament',
       version: 1,
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          cleanupOrphanedBoardResultsStorage(state.tournaments)
+        }
+      },
     },
   ),
 )
