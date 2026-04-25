@@ -114,6 +114,7 @@ export interface Tournament {
   boardsPerMatch: number
   matchFormat: MatchFormat
   datumSchema: DatumSchema
+  customDatumSlug?: string
   createdAt: string
   players: Player[]
   sessions: Session[]
@@ -130,6 +131,7 @@ export interface ScoreBoardInput {
   declarer: Seat
   vulnerability: Vulnerability
   schema: DatumSchema
+  customDatumSlug?: string
   manualDeclaringHcp?: number
 }
 

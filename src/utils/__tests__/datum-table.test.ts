@@ -3,6 +3,8 @@ import {
   getDatum,
   getDatumSchemaPreview,
   hasCustomDatumTable,
+  listCustomDatumSheets,
+  loadCustomDatumTitle,
   parseDatumCsv,
   saveCustomDatumCsv,
 } from '../../data/datum-table'
@@ -86,5 +88,31 @@ describe('getDatum', () => {
       { hcp: 24, nv: 330, vul: 430 },
       { hcp: 25, nv: 420, vul: 620 },
     ])
+  })
+
+  it('stores and loads multiple custom sheets by slug', () => {
+    localStorage.clear()
+
+    const alphaSlug = saveCustomDatumCsv('24,330,430\n25,420,620', 'Alpha Sheet')
+    const betaSlug = saveCustomDatumCsv('24,220,260\n25,300,400', 'Beta Sheet')
+
+    const sheets = listCustomDatumSheets()
+    expect(sheets.map((sheet) => sheet.slug)).toContain(alphaSlug)
+    expect(sheets.map((sheet) => sheet.slug)).toContain(betaSlug)
+
+    expect(loadCustomDatumTitle(alphaSlug)).toBe('Alpha Sheet')
+    expect(getDatum(25, true, 'custom', alphaSlug)).toBe(620)
+    expect(getDatum(25, true, 'custom', betaSlug)).toBe(400)
+  })
+
+  it('overrides existing custom sheet when title slug matches', () => {
+    localStorage.clear()
+
+    const slugA = saveCustomDatumCsv('24,330,430\n25,420,620', 'Club Datum 2026')
+    const slugB = saveCustomDatumCsv('24,100,200\n25,110,210', 'Club Datum 2026')
+
+    expect(slugA).toBe(slugB)
+    expect(getDatum(24, true, 'custom', slugA)).toBe(200)
+    expect(listCustomDatumSheets()).toHaveLength(1)
   })
 })

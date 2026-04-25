@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent } from 'react'
+import { useMemo, useState, type ChangeEvent } from 'react'
 import { useTournamentStore } from '../../store/tournament'
 import { useTheme } from '../../hooks/useTheme'
 import { useI18n } from '../../i18n/I18nProvider'
@@ -6,6 +6,7 @@ import {
   CUSTOM_DATUM_DEFAULT_TITLE,
   getDatumSchemaPreview,
   hasCustomDatumTable,
+  listCustomDatumSheets,
   loadCustomDatumTitle,
   saveCustomDatumCsv,
 } from '../../data/datum-table'
@@ -36,8 +37,16 @@ export default function TournamentHome(props: Props) {
   const [customDatumMessage, setCustomDatumMessage] = useState<string | null>(null)
   const [customDatumMessageKind, setCustomDatumMessageKind] = useState<'success' | 'error' | null>(null)
   const [showSchemaPreview, setShowSchemaPreview] = useState(false)
+  const [customSheetsVersion, setCustomSheetsVersion] = useState(0)
 
-  const customDatumAvailable = hasCustomDatumTable()
+  const customDatumSheets = useMemo(
+    () => listCustomDatumSheets(),
+    [customSheetsVersion],
+  )
+  const defaultCustomDatumSlug = customDatumSheets[0]?.slug ?? ''
+  const [selectedCustomDatumSlug, setSelectedCustomDatumSlug] = useState(defaultCustomDatumSlug)
+
+  const customDatumAvailable = hasCustomDatumTable(selectedCustomDatumSlug || undefined)
   const schemaPreviewRows = getDatumSchemaPreview(datumSchema)
 
   const schemaPreviewDescription =
@@ -50,7 +59,9 @@ export default function TournamentHome(props: Props) {
   const loadCustomDatumFromText = () => {
     try {
       const title = customDatumTitle.trim() || CUSTOM_DATUM_DEFAULT_TITLE
-      saveCustomDatumCsv(customDatumText, title)
+      const savedSlug = saveCustomDatumCsv(customDatumText, title)
+      setCustomSheetsVersion((prev) => prev + 1)
+      setSelectedCustomDatumSlug(savedSlug)
       setCustomDatumTitle(title)
       setCustomDatumMessage(t('customDatum.loaded'))
       setCustomDatumMessageKind('success')
@@ -70,7 +81,9 @@ export default function TournamentHome(props: Props) {
     try {
       const text = await file.text()
       const title = customDatumTitle.trim() || CUSTOM_DATUM_DEFAULT_TITLE
-      saveCustomDatumCsv(text, title)
+      const savedSlug = saveCustomDatumCsv(text, title)
+      setCustomSheetsVersion((prev) => prev + 1)
+      setSelectedCustomDatumSlug(savedSlug)
       setCustomDatumTitle(title)
       setCustomDatumMessage(t('customDatum.loaded'))
       setCustomDatumMessageKind('success')
@@ -87,14 +100,22 @@ export default function TournamentHome(props: Props) {
   const handleCreate = () => {
     const trimmed = name.trim()
     if (!trimmed) return
-    if (useCustomDatum && !customDatumAvailable) return
+    const activeCustomDatumSlug = selectedCustomDatumSlug || defaultCustomDatumSlug
+    if (useCustomDatum && (!activeCustomDatumSlug || !hasCustomDatumTable(activeCustomDatumSlug))) return
     const selectedSchema: DatumSchema = useCustomDatum ? 'custom' : datumSchema
-    const t2 = createTournament({ name: trimmed, boardsPerMatch, matchFormat, datumSchema: selectedSchema })
+    const t2 = createTournament({
+      name: trimmed,
+      boardsPerMatch,
+      matchFormat,
+      datumSchema: selectedSchema,
+      customDatumSlug: useCustomDatum ? activeCustomDatumSlug : undefined,
+    })
     setName('')
     setBoardsPerMatch(8)
     setMatchFormat('vp')
     setDatumSchema('modern')
     setUseCustomDatum(false)
+    setSelectedCustomDatumSlug(defaultCustomDatumSlug)
     setShowForm(false)
     onOpen(t2)
   }
@@ -248,6 +269,26 @@ export default function TournamentHome(props: Props) {
 
             {useCustomDatum ? (
               <div className="sm:col-span-2">
+                {customDatumSheets.length > 0 ? (
+                  <label className="text-sm text-slate-700 dark:text-slate-200">
+                    {t('customDatum.savedSheets')}
+                    <select
+                      className={selectClass}
+                      value={selectedCustomDatumSlug || customDatumSheets[0]?.slug || ''}
+                      onChange={(event) => {
+                        const slug = event.target.value
+                        setSelectedCustomDatumSlug(slug)
+                        setCustomDatumTitle(loadCustomDatumTitle(slug))
+                      }}
+                    >
+                      {customDatumSheets.map((sheet) => (
+                        <option key={sheet.slug} value={sheet.slug}>
+                          {sheet.title}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                ) : null}
                 <label className="text-sm text-slate-700 dark:text-slate-200">
                   {t('customDatum.title')}
                   <input

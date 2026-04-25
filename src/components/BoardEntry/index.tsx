@@ -161,8 +161,8 @@ export default function BoardEntry({ tournament, onBack }: Props) {
   )
 
   const schemaPreviewRows = useMemo(
-    () => getDatumSchemaPreview(datumSchema),
-    [datumSchema],
+    () => getDatumSchemaPreview(datumSchema, tournament.customDatumSlug),
+    [datumSchema, tournament.customDatumSlug],
   )
 
   useEffect(() => {
@@ -186,13 +186,14 @@ export default function BoardEntry({ tournament, onBack }: Props) {
       vulnerability,
       doubled,
       schema: datumSchema,
+      customDatumSlug: tournament.customDatumSlug,
       manualDeclaringHcp: manualHcp ?? undefined,
     }),
-    [contract, declarer, result, vulnerability, doubled, datumSchema, manualHcp],
+    [contract, declarer, result, vulnerability, doubled, datumSchema, manualHcp, tournament.customDatumSlug],
   )
 
   const { data, errorKey, errorMessage } = useScoring(scoringInput)
-  const customDatumTitle = loadCustomDatumTitle()
+  const customDatumTitle = loadCustomDatumTitle(tournament.customDatumSlug)
 
   const vulnerabilityLabelMap: Record<Vulnerability, string> = {
     None: t('vul.none'),

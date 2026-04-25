@@ -36,9 +36,10 @@ interface TournamentState {
     boardsPerMatch: number
     matchFormat: MatchFormat
     datumSchema: DatumSchema
+    customDatumSlug?: string
   }) => Tournament
 
-  updateTournament: (id: string, changes: Partial<Pick<Tournament, 'name' | 'boardsPerMatch' | 'matchFormat' | 'datumSchema'>>) => void
+  updateTournament: (id: string, changes: Partial<Pick<Tournament, 'name' | 'boardsPerMatch' | 'matchFormat' | 'datumSchema' | 'customDatumSlug'>>) => void
 
   deleteTournament: (id: string) => void
 
@@ -82,6 +83,7 @@ export const useTournamentStore = create<TournamentState>()(
           boardsPerMatch: opts.boardsPerMatch,
           matchFormat: opts.matchFormat,
           datumSchema: opts.datumSchema,
+          customDatumSlug: opts.customDatumSlug,
           createdAt: new Date().toISOString(),
           players: [],
           sessions: [],
