@@ -343,6 +343,18 @@ export function loadCustomDatumTable(customSlug?: string): Record<number, DatumR
   return loadCustomDatumConfig(customSlug).table
 }
 
+export function loadCustomDatumCsvText(customSlug?: string): string {
+  const table = loadCustomDatumTable(customSlug)
+  const hcpValues = getSortedHcpValues(table)
+
+  return hcpValues
+    .map((hcp) => {
+      const row = table[hcp]
+      return `${hcp},${row.nv},${row.vul}`
+    })
+    .join('\n')
+}
+
 export function loadCustomDatumTitle(customSlug?: string): string {
   return loadCustomDatumConfig(customSlug).title || CUSTOM_DATUM_DEFAULT_TITLE
 }

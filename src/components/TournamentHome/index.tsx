@@ -7,6 +7,7 @@ import {
   getDatumSchemaPreview,
   hasCustomDatumTable,
   listCustomDatumSheets,
+  loadCustomDatumCsvText,
   loadCustomDatumTitle,
   saveCustomDatumCsv,
 } from '../../data/datum-table'
@@ -32,7 +33,7 @@ export default function TournamentHome(props: Props) {
   const [matchFormat, setMatchFormat] = useState<MatchFormat>('vp')
   const [datumSchema, setDatumSchema] = useState<Exclude<DatumSchema, 'custom'>>('modern')
   const [useCustomDatum, setUseCustomDatum] = useState(false)
-  const [customDatumTitle, setCustomDatumTitle] = useState(loadCustomDatumTitle())
+  const [customDatumTitle, setCustomDatumTitle] = useState('')
   const [customDatumText, setCustomDatumText] = useState('')
   const [customDatumMessage, setCustomDatumMessage] = useState<string | null>(null)
   const [customDatumMessageKind, setCustomDatumMessageKind] = useState<'success' | 'error' | null>(null)
@@ -43,10 +44,9 @@ export default function TournamentHome(props: Props) {
     () => listCustomDatumSheets(),
     [customSheetsVersion],
   )
-  const defaultCustomDatumSlug = customDatumSheets[0]?.slug ?? ''
-  const [selectedCustomDatumSlug, setSelectedCustomDatumSlug] = useState(defaultCustomDatumSlug)
+  const [selectedCustomDatumSlug, setSelectedCustomDatumSlug] = useState('')
 
-  const customDatumAvailable = hasCustomDatumTable(selectedCustomDatumSlug || undefined)
+  const customDatumAvailable = selectedCustomDatumSlug.length > 0 && hasCustomDatumTable(selectedCustomDatumSlug)
   const schemaPreviewRows = getDatumSchemaPreview(datumSchema)
 
   const locale = language === 'da' ? 'da-DK' : 'en-GB'
@@ -152,7 +152,7 @@ export default function TournamentHome(props: Props) {
   const handleCreate = () => {
     const trimmed = name.trim()
     if (!trimmed) return
-    const activeCustomDatumSlug = selectedCustomDatumSlug || defaultCustomDatumSlug
+    const activeCustomDatumSlug = selectedCustomDatumSlug
     if (useCustomDatum && (!activeCustomDatumSlug || !hasCustomDatumTable(activeCustomDatumSlug))) return
     const selectedSchema: DatumSchema = useCustomDatum ? 'custom' : datumSchema
     const t2 = createTournament({
@@ -167,7 +167,11 @@ export default function TournamentHome(props: Props) {
     setMatchFormat('vp')
     setDatumSchema('modern')
     setUseCustomDatum(false)
-    setSelectedCustomDatumSlug(defaultCustomDatumSlug)
+    setSelectedCustomDatumSlug('')
+    setCustomDatumTitle('')
+    setCustomDatumText('')
+    setCustomDatumMessage(null)
+    setCustomDatumMessageKind(null)
     setShowForm(false)
     onOpen(t2)
   }
@@ -326,13 +330,22 @@ export default function TournamentHome(props: Props) {
                     {t('customDatum.savedSheets')}
                     <select
                       className={selectClass}
-                      value={selectedCustomDatumSlug || customDatumSheets[0]?.slug || ''}
+                      value={selectedCustomDatumSlug}
                       onChange={(event) => {
                         const slug = event.target.value
                         setSelectedCustomDatumSlug(slug)
+
+                        if (!slug) {
+                          setCustomDatumTitle('')
+                          setCustomDatumText('')
+                          return
+                        }
+
                         setCustomDatumTitle(loadCustomDatumTitle(slug))
+                        setCustomDatumText(loadCustomDatumCsvText(slug))
                       }}
                     >
+                      <option value="">{t('customDatum.savedSheetsPlaceholder')}</option>
                       {customDatumSheets.map((sheet) => (
                         <option key={sheet.slug} value={sheet.slug}>
                           {sheet.title}
@@ -417,7 +430,14 @@ export default function TournamentHome(props: Props) {
         <div className="mb-4">
           <button
             type="button"
-            onClick={() => setShowForm(true)}
+            onClick={() => {
+              setShowForm(true)
+              setSelectedCustomDatumSlug('')
+              setCustomDatumTitle('')
+              setCustomDatumText('')
+              setCustomDatumMessage(null)
+              setCustomDatumMessageKind(null)
+            }}
             className="inline-flex items-center rounded-lg border border-blue-300 bg-blue-50 px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm hover:bg-blue-100 dark:border-blue-700 dark:bg-blue-900/20 dark:text-blue-200 dark:hover:bg-blue-900/30"
           >
             + {t('tournament.new')}
