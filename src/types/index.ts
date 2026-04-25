@@ -4,7 +4,7 @@ export type Side = 'NS' | 'EW'
 
 export type Vulnerability = 'None' | 'NS' | 'EW' | 'Both'
 
-export type DatumSchema = 'modern' | 'classic'
+export type DatumSchema = 'modern' | 'polsk-rubber' | 'classic' | 'custom'
 
 export type Doubled = 'X' | 'XX' | null
 

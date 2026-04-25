@@ -33,7 +33,7 @@ import ScoreCard from '../ScoreCard'
 import { useScoring } from '../../hooks/useScoring'
 import { useTheme } from '../../hooks/useTheme'
 import { useI18n } from '../../i18n/I18nProvider'
-import { getDatumSchemaPreview } from '../../data/datum-table'
+import { getDatumSchemaPreview, loadCustomDatumTitle } from '../../data/datum-table'
 import type { Doubled, Tournament, Vulnerability } from '../../types'
 import { getBoardVulnerability } from '../../utils/boardVul'
 
@@ -192,6 +192,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
   )
 
   const { data, errorKey, errorMessage } = useScoring(scoringInput)
+  const customDatumTitle = loadCustomDatumTitle()
 
   const vulnerabilityLabelMap: Record<Vulnerability, string> = {
     None: t('vul.none'),
@@ -434,7 +435,13 @@ export default function BoardEntry({ tournament, onBack }: Props) {
 
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <p className="text-xs text-slate-500 dark:text-slate-400 md:col-span-2">
-              {t('schema.label')}: {datumSchema === 'modern' ? t('schema.modern') : t('schema.classic')}
+              {t('schema.label')}: {datumSchema === 'modern'
+                ? t('schema.modern')
+                : datumSchema === 'polsk-rubber'
+                  ? t('schema.polskRubber')
+                : datumSchema === 'classic'
+                  ? t('schema.classic')
+                  : `${t('schema.custom')} (${customDatumTitle})`}
             </p>
 
             <label className="text-sm text-slate-700 dark:text-slate-200">

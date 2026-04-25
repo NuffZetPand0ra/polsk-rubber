@@ -14,7 +14,20 @@ export type TranslationKey =
   | 'section.boardResult'
   | 'schema.label'
   | 'schema.modern'
+  | 'schema.polskRubber'
   | 'schema.classic'
+  | 'schema.custom'
+  | 'customDatum.upload'
+  | 'customDatum.useCustom'
+  | 'customDatum.title'
+  | 'customDatum.titlePlaceholder'
+  | 'customDatum.pasteLabel'
+  | 'customDatum.pastePlaceholder'
+  | 'customDatum.applyText'
+  | 'customDatum.hint'
+  | 'customDatum.loaded'
+  | 'customDatum.required'
+  | 'customDatum.errorPrefix'
   | 'field.contract'
   | 'field.contractLevel'
   | 'field.contractSuit'
@@ -47,7 +60,12 @@ export type TranslationKey =
   | 'result.made'
   | 'preview.button.show'
   | 'preview.button.hide'
+  | 'preview.button.open'
+  | 'preview.button.close'
   | 'preview.title'
+  | 'preview.description.modern'
+  | 'preview.description.polskRubber'
+  | 'preview.description.classic'
   | 'preview.hcp'
   | 'preview.nv'
   | 'preview.vul'
@@ -84,7 +102,20 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'section.boardResult': 'Spilresultat',
     'schema.label': 'Datum-skema',
     'schema.modern': 'Moderne',
+    'schema.polskRubber': 'Polsk Rubber',
     'schema.classic': 'Klassisk',
+    'schema.custom': 'Brugerdefineret',
+    'customDatum.upload': 'Upload datum-fil (CSV/TXT)',
+    'customDatum.useCustom': 'Brug brugerdefineret datum-format',
+    'customDatum.title': 'Titel for brugerdefineret datum',
+    'customDatum.titlePlaceholder': 'Fx Klub Datum 2026',
+    'customDatum.pasteLabel': 'Eller indsat datum-tekst',
+    'customDatum.pastePlaceholder': 'HCP, non vul, vul\n20,0,0\n21,90,90',
+    'customDatum.applyText': 'Gem indsatte datum-data',
+    'customDatum.hint': 'Kolonner: HCP, non vul, vul. Komma eller semikolon. Header er valgfri.',
+    'customDatum.loaded': 'Brugerdefineret datum-skema er indlaest.',
+    'customDatum.required': 'Upload eller indsat et gyldigt brugerdefineret datum-skema for at fortsaette.',
+    'customDatum.errorPrefix': 'Kunne ikke indlaese datum-skema:',
     'field.contract': 'Kontrakt (fx 4H, 3NT)',
     'field.contractLevel': 'Kontrakttrin',
     'field.contractSuit': 'Kontraktfarve',
@@ -117,7 +148,12 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'result.made': 'Vundet',
     'preview.button.show': 'Vis datum-skema',
     'preview.button.hide': 'Skjul datum-skema',
+    'preview.button.open': 'Forhaandsvis',
+    'preview.button.close': 'Luk',
     'preview.title': 'Forhåndsvisning af score-skema (HCP → point)',
+    'preview.description.modern': 'Moderne schema med fokus pa sammenhaengende progression fra delkontrakter til udgange/slam.',
+    'preview.description.polskRubber': 'Polsk Rubber schema med de faste klubvaerdier for HCP-intervaller.',
+    'preview.description.classic': 'Klassisk schema med den traditionelle datumskala.',
     'preview.hcp': 'HCP',
     'preview.nv': 'UZ',
     'preview.vul': 'IZ',
@@ -153,7 +189,20 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'section.boardResult': 'Board Result',
     'schema.label': 'Datum Schema',
     'schema.modern': 'Modern',
+    'schema.polskRubber': 'Polsk Rubber',
     'schema.classic': 'Classic',
+    'schema.custom': 'Custom',
+    'customDatum.upload': 'Upload datum file (CSV/TXT)',
+    'customDatum.useCustom': 'Use custom datum format',
+    'customDatum.title': 'Custom datum title',
+    'customDatum.titlePlaceholder': 'e.g. Club Datum 2026',
+    'customDatum.pasteLabel': 'Or paste datum text',
+    'customDatum.pastePlaceholder': 'HCP, non vul, vul\n20,0,0\n21,90,90',
+    'customDatum.applyText': 'Save pasted datum data',
+    'customDatum.hint': 'Columns: HCP, non vul, vul. Comma or semicolon. Header optional.',
+    'customDatum.loaded': 'Custom datum schema loaded.',
+    'customDatum.required': 'Upload or paste a valid custom datum schema to continue.',
+    'customDatum.errorPrefix': 'Could not load datum schema:',
     'field.contract': 'Contract (e.g. 4H, 3NT)',
     'field.contractLevel': 'Contract Level',
     'field.contractSuit': 'Contract Suit',
@@ -186,7 +235,12 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'result.made': 'Made',
     'preview.button.show': 'Preview score schema',
     'preview.button.hide': 'Hide score schema',
+    'preview.button.open': 'Preview',
+    'preview.button.close': 'Close',
     'preview.title': 'Score schema preview (HCP to points)',
+    'preview.description.modern': 'Modern schema tuned for smooth progression from part-scores to game and slam contracts.',
+    'preview.description.polskRubber': 'Polsk Rubber schema using the fixed club values across HCP intervals.',
+    'preview.description.classic': 'Classic schema based on the traditional datum scale.',
     'preview.hcp': 'HCP',
     'preview.nv': 'Not Vulnerable',
     'preview.vul': 'Vulnerable',
