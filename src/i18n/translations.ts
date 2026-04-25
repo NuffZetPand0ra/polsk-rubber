@@ -60,7 +60,12 @@ export type TranslationKey =
   | 'result.made'
   | 'preview.button.show'
   | 'preview.button.hide'
+  | 'preview.button.open'
+  | 'preview.button.close'
   | 'preview.title'
+  | 'preview.description.modern'
+  | 'preview.description.polskRubber'
+  | 'preview.description.classic'
   | 'preview.hcp'
   | 'preview.nv'
   | 'preview.vul'
@@ -143,7 +148,12 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'result.made': 'Vundet',
     'preview.button.show': 'Vis datum-skema',
     'preview.button.hide': 'Skjul datum-skema',
+    'preview.button.open': 'Forhaandsvis',
+    'preview.button.close': 'Luk',
     'preview.title': 'Forhåndsvisning af score-skema (HCP → point)',
+    'preview.description.modern': 'Moderne schema med fokus pa sammenhaengende progression fra delkontrakter til udgange/slam.',
+    'preview.description.polskRubber': 'Polsk Rubber schema med de faste klubvaerdier for HCP-intervaller.',
+    'preview.description.classic': 'Klassisk schema med den traditionelle datumskala.',
     'preview.hcp': 'HCP',
     'preview.nv': 'UZ',
     'preview.vul': 'IZ',
@@ -225,7 +235,12 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'result.made': 'Made',
     'preview.button.show': 'Preview score schema',
     'preview.button.hide': 'Hide score schema',
+    'preview.button.open': 'Preview',
+    'preview.button.close': 'Close',
     'preview.title': 'Score schema preview (HCP to points)',
+    'preview.description.modern': 'Modern schema tuned for smooth progression from part-scores to game and slam contracts.',
+    'preview.description.polskRubber': 'Polsk Rubber schema using the fixed club values across HCP intervals.',
+    'preview.description.classic': 'Classic schema based on the traditional datum scale.',
     'preview.hcp': 'HCP',
     'preview.nv': 'Not Vulnerable',
     'preview.vul': 'Vulnerable',
