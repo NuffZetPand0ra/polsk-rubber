@@ -39,6 +39,7 @@ export default function TournamentHome(props: Props) {
   const [customDatumMessageKind, setCustomDatumMessageKind] = useState<'success' | 'error' | null>(null)
   const [showSchemaPreview, setShowSchemaPreview] = useState(false)
   const [customSheetsVersion, setCustomSheetsVersion] = useState(0)
+  const [selectedDatumOption, setSelectedDatumOption] = useState('')
 
   const customDatumSheets = useMemo(
     () => listCustomDatumSheets(),
@@ -108,12 +109,32 @@ export default function TournamentHome(props: Props) {
         ? t('preview.description.polskRubber')
         : t('preview.description.classic')
 
+  const dropdownOptions = useMemo(
+    () => [
+      { value: 'builtin:modern', label: `(C) ${t('schema.modern')}` },
+      { value: 'builtin:polsk-rubber', label: `(C) ${t('schema.polskRubber')}` },
+      { value: 'builtin:classic', label: `(C) ${t('schema.classic')}` },
+      ...customDatumSheets.map((sheet) => ({ value: `custom:${sheet.slug}`, label: sheet.title })),
+    ],
+    [customDatumSheets, t],
+  )
+
+  const builtInCsvBySchema = useMemo(
+    () => ({
+      modern: getDatumSchemaPreview('modern').map((row) => `${row.hcp},${row.nv},${row.vul}`).join('\n'),
+      'polsk-rubber': getDatumSchemaPreview('polsk-rubber').map((row) => `${row.hcp},${row.nv},${row.vul}`).join('\n'),
+      classic: getDatumSchemaPreview('classic').map((row) => `${row.hcp},${row.nv},${row.vul}`).join('\n'),
+    }),
+    [],
+  )
+
   const loadCustomDatumFromText = () => {
     try {
       const title = customDatumTitle.trim() || CUSTOM_DATUM_DEFAULT_TITLE
       const savedSlug = saveCustomDatumCsv(customDatumText, title)
       setCustomSheetsVersion((prev) => prev + 1)
       setSelectedCustomDatumSlug(savedSlug)
+      setSelectedDatumOption(`custom:${savedSlug}`)
       setCustomDatumTitle(title)
       setCustomDatumMessage(t('customDatum.loaded'))
       setCustomDatumMessageKind('success')
@@ -136,6 +157,7 @@ export default function TournamentHome(props: Props) {
       const savedSlug = saveCustomDatumCsv(text, title)
       setCustomSheetsVersion((prev) => prev + 1)
       setSelectedCustomDatumSlug(savedSlug)
+      setSelectedDatumOption(`custom:${savedSlug}`)
       setCustomDatumTitle(title)
       setCustomDatumMessage(t('customDatum.loaded'))
       setCustomDatumMessageKind('success')
@@ -168,6 +190,7 @@ export default function TournamentHome(props: Props) {
     setDatumSchema('modern')
     setUseCustomDatum(false)
     setSelectedCustomDatumSlug('')
+    setSelectedDatumOption('')
     setCustomDatumTitle('')
     setCustomDatumText('')
     setCustomDatumMessage(null)
@@ -330,25 +353,43 @@ export default function TournamentHome(props: Props) {
                     {t('customDatum.savedSheets')}
                     <select
                       className={selectClass}
-                      value={selectedCustomDatumSlug}
+                      value={selectedDatumOption}
                       onChange={(event) => {
-                        const slug = event.target.value
-                        setSelectedCustomDatumSlug(slug)
+                        const selected = event.target.value
+                        setSelectedDatumOption(selected)
 
-                        if (!slug) {
+                        if (!selected) {
+                          setSelectedCustomDatumSlug('')
                           setCustomDatumTitle('')
                           setCustomDatumText('')
                           return
                         }
+
+                        if (selected.startsWith('builtin:')) {
+                          const schema = selected.replace('builtin:', '') as 'modern' | 'polsk-rubber' | 'classic'
+                          setSelectedCustomDatumSlug('')
+                          setCustomDatumTitle(`(C) ${
+                            schema === 'modern'
+                              ? t('schema.modern')
+                              : schema === 'polsk-rubber'
+                                ? t('schema.polskRubber')
+                                : t('schema.classic')
+                          }`)
+                          setCustomDatumText(builtInCsvBySchema[schema])
+                          return
+                        }
+
+                        const slug = selected.replace('custom:', '')
+                        setSelectedCustomDatumSlug(slug)
 
                         setCustomDatumTitle(loadCustomDatumTitle(slug))
                         setCustomDatumText(loadCustomDatumCsvText(slug))
                       }}
                     >
                       <option value="">{t('customDatum.savedSheetsPlaceholder')}</option>
-                      {customDatumSheets.map((sheet) => (
-                        <option key={sheet.slug} value={sheet.slug}>
-                          {sheet.title}
+                      {dropdownOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
                         </option>
                       ))}
                     </select>
@@ -433,6 +474,7 @@ export default function TournamentHome(props: Props) {
             onClick={() => {
               setShowForm(true)
               setSelectedCustomDatumSlug('')
+              setSelectedDatumOption('')
               setCustomDatumTitle('')
               setCustomDatumText('')
               setCustomDatumMessage(null)
