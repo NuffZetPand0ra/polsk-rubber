@@ -309,6 +309,7 @@ export default function TournamentHome(props: Props) {
               >
                 <option value="vp">{t('tournament.format.vp')}</option>
                 <option value="carry-over">{t('tournament.format.carryOver')}</option>
+                <option value="bam">{t('tournament.format.bam')}</option>
               </select>
             </label>
 
@@ -503,7 +504,9 @@ export default function TournamentHome(props: Props) {
                     {tournament.boardsPerMatch} {t('tournament.boards')} ·{' '}
                     {tournament.matchFormat === 'vp'
                       ? t('tournament.format.vp')
-                      : t('tournament.format.carryOver')}{' '}
+                      : tournament.matchFormat === 'bam'
+                        ? t('tournament.format.bam')
+                        : t('tournament.format.carryOver')}{' '}
                     · {tournament.datumSchema === 'modern'
                       ? t('schema.modern')
                       : tournament.datumSchema === 'polsk-rubber'

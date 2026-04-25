@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import type { Hand, ScoreBoardInput, ScoreBoardOutput } from '../types'
 import { getDatumForBoard, getDeclaringSide } from '../utils/datum'
 import { computeHandHcp, validateManualHcp } from '../utils/hcp'
-import { scoreBoard } from '../utils/imp'
+import { impToBam, scoreBoard } from '../utils/imp'
 import { computeActualScore } from '../utils/scoring'
 
 interface UseScoringInput extends ScoreBoardInput {
@@ -76,6 +76,7 @@ export function useScoring(input: UseScoringInput): {
     try {
 
       const { datumRounded, diff, imp } = scoreBoard(actualScore, datumRaw)
+      const bam = impToBam(imp)
 
       return {
         data: {
@@ -88,6 +89,7 @@ export function useScoring(input: UseScoringInput): {
           actualScore,
           diff,
           imp,
+          bam,
         },
         errorKey: null,
         errorMessage: null,

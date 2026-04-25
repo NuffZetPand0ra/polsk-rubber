@@ -23,6 +23,12 @@ export function diffToImp(diff: number): number {
   return diff >= 0 ? imp : -imp
 }
 
+export function impToBam(imp: number): 1 | -1 | 0 {
+  if (imp > 0) return 1
+  if (imp < 0) return -1
+  return 0
+}
+
 export function scoreBoard(actualScore: number, datum: number): {
   datumRounded: number
   diff: number

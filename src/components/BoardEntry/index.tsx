@@ -65,6 +65,7 @@ interface BoardResult {
   vulnerability: Vulnerability
   doubled: Doubled
   imp: number
+  bam: number
   hcp: number
   actualScore: number
 }
@@ -134,6 +135,8 @@ export default function BoardEntry({ tournament, onBack }: Props) {
 
   const boardsPlayed = boardResults.length
   const impTally = boardResults.reduce((sum: number, r: BoardResult) => sum + r.imp, 0)
+  const bamTally = boardResults.reduce((sum: number, r: BoardResult) => sum + r.bam, 0)
+  const isBam = tournament.matchFormat === 'bam'
 
   const [contractLevel, setContractLevel] = useState<number>(1)
   const [contractSuit, setContractSuit] = useState<(typeof contractSuits)[number]>('C')
@@ -251,6 +254,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
             vulnerability,
             doubled,
             imp: data.imp,
+            bam: data.bam,
             hcp: manualHcp ?? 20,
             actualScore: data.actualScore,
           },
@@ -329,6 +333,11 @@ export default function BoardEntry({ tournament, onBack }: Props) {
   const [vpNS, vpEW] = goldenMeanVP(Math.abs(impTally), boardsPerMatch)
   const vpLabel = impTally >= 0 ? `${vpNS} - ${vpEW}` : `${vpEW} - ${vpNS}`
 
+  // BAM end-of-match totals: NS wins vs EW wins
+  const nsBamWins = boardResults.filter((r) => r.bam > 0).length
+  const ewBamWins = boardResults.filter((r) => r.bam < 0).length
+  const bamTies = boardResults.filter((r) => r.bam === 0).length
+
   const boardsLeft = boardsPerMatch - boardsPlayed
 
   return (
@@ -337,8 +346,17 @@ export default function BoardEntry({ tournament, onBack }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
           <div className="bg-white dark:bg-slate-900 rounded-xl shadow-lg p-6 max-w-lg w-full">
             <h2 className="text-2xl font-bold mb-2">Tournament Complete</h2>
-            <div className="mb-2">Total IMPs: <strong>{impTally}</strong></div>
-            <div className="mb-2">Victory Points: <strong>{vpLabel}</strong></div>
+            {isBam ? (
+              <>
+                <div className="mb-2">BAM Score (NS): <strong>{nsBamWins} – {ewBamWins}{bamTies > 0 ? ` (${bamTies} tie${bamTies > 1 ? 's' : ''})` : ''}</strong></div>
+                <div className="mb-2">Total BAM: <strong>{bamTally > 0 ? `+${bamTally}` : bamTally}</strong></div>
+              </>
+            ) : (
+              <>
+                <div className="mb-2">Total IMPs: <strong>{impTally}</strong></div>
+                <div className="mb-2">Victory Points: <strong>{vpLabel}</strong></div>
+              </>
+            )}
             <div className="mb-4">
               <h3 className="font-semibold mb-1">Results Table</h3>
               <table className="min-w-full border text-sm">
@@ -351,7 +369,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
                     <th className="border px-2 py-1">Result</th>
                     <th className="border px-2 py-1">Vul</th>
                     <th className="border px-2 py-1">Dbl</th>
-                    <th className="border px-2 py-1">IMP</th>
+                    <th className="border px-2 py-1">{isBam ? 'BAM' : 'IMP'}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -372,14 +390,14 @@ export default function BoardEntry({ tournament, onBack }: Props) {
                       <td className="border px-2 py-1">{r.result} ({r.actualScore >= 0 ? '+' : ''}{r.actualScore})</td>
                       <td className="border px-2 py-1">{r.vulnerability}</td>
                       <td className="border px-2 py-1">{r.doubled || '-'}</td>
-                      <td className="border px-2 py-1">{r.imp}</td>
+                      <td className="border px-2 py-1">{isBam ? (r.bam > 0 ? '+1' : r.bam < 0 ? '-1' : '0') : r.imp}</td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
                   <tr className="bg-slate-200 dark:bg-slate-900 font-bold">
-                    <td className="border px-2 py-1 text-right" colSpan={7}>Total IMP</td>
-                    <td className="border px-2 py-1">{impTally}</td>
+                    <td className="border px-2 py-1 text-right" colSpan={7}>{isBam ? 'Total BAM' : 'Total IMP'}</td>
+                    <td className="border px-2 py-1">{isBam ? (bamTally > 0 ? `+${bamTally}` : bamTally) : impTally}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -400,9 +418,16 @@ export default function BoardEntry({ tournament, onBack }: Props) {
           <div className="text-sm text-slate-700 dark:text-slate-200">
             <strong>Total IMP:</strong> {impTally}
           </div>
-          <div className="text-sm text-slate-700 dark:text-slate-200">
-            <strong>Victory Points:</strong> {vpLabel}
-          </div>
+          {!isBam && (
+            <div className="text-sm text-slate-700 dark:text-slate-200">
+              <strong>Victory Points:</strong> {vpLabel}
+            </div>
+          )}
+          {isBam && (
+            <div className="text-sm text-slate-700 dark:text-slate-200">
+              <strong>BAM:</strong> {bamTally > 0 ? `+${bamTally}` : bamTally} ({nsBamWins}W / {ewBamWins}L / {bamTies}T)
+            </div>
+          )}
           <div className="text-sm text-slate-700 dark:text-slate-200">
             <strong>Boards left:</strong> {boardsLeft}
           </div>
@@ -646,7 +671,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
                     <th className="border px-2 py-1">Result</th>
                     <th className="border px-2 py-1">Vul</th>
                     <th className="border px-2 py-1">Dbl</th>
-                    <th className="border px-2 py-1">IMP</th>
+                    <th className="border px-2 py-1">{isBam ? 'BAM' : 'IMP'}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -667,14 +692,14 @@ export default function BoardEntry({ tournament, onBack }: Props) {
                       <td className="border px-2 py-1">{r.result} ({r.actualScore >= 0 ? '+' : ''}{r.actualScore})</td>
                       <td className="border px-2 py-1">{r.vulnerability}</td>
                       <td className="border px-2 py-1">{r.doubled || '-'}</td>
-                      <td className="border px-2 py-1">{r.imp}</td>
+                      <td className="border px-2 py-1">{isBam ? (r.bam > 0 ? '+1' : r.bam < 0 ? '-1' : '0') : r.imp}</td>
                     </tr>
                   ))}
                 </tbody>
                 <tfoot>
                   <tr className="bg-slate-200 dark:bg-slate-900 font-bold">
-                    <td className="border px-2 py-1 text-right" colSpan={7}>Total IMP</td>
-                    <td className="border px-2 py-1">{impTally}</td>
+                    <td className="border px-2 py-1 text-right" colSpan={7}>{isBam ? 'Total BAM' : 'Total IMP'}</td>
+                    <td className="border px-2 py-1">{isBam ? (bamTally > 0 ? `+${bamTally}` : bamTally) : impTally}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -724,7 +749,7 @@ export default function BoardEntry({ tournament, onBack }: Props) {
           ) : null}
         </section>
 
-        {data ? <ScoreCard data={data} /> : null}
+        {data ? <ScoreCard data={data} matchFormat={tournament.matchFormat} /> : null}
       </div>
     </div>
   )

@@ -59,7 +59,7 @@ export interface Player {
 }
 
 /** How the match score is aggregated across boards. */
-export type MatchFormat = 'vp' | 'carry-over'
+export type MatchFormat = 'vp' | 'carry-over' | 'bam'
 
 /**
  * A single scored board within a match.
@@ -80,6 +80,8 @@ export interface MatchBoard {
   datum: number
   /** IMP score for this board (NS perspective, negative = EW won) */
   imp: number
+  /** BAM score for this board (NS perspective): +1 win, -1 loss, 0 tie */
+  bam?: number
 }
 
 /**
@@ -96,9 +98,12 @@ export interface Match {
   boards: MatchBoard[]
   /** Total IMPs (NS perspective). Computed, stored for quick access. */
   totalImp: number
+  /** Total BAM score (NS perspective). Only meaningful for BAM format matches. */
+  totalBam: number
   /**
    * VP result once all boards are played.
    * [nsVP, ewVP] — only set when boards.length === tournament.boardsPerMatch
+   * Always null for BAM format.
    */
   vpResult: [number, number] | null
   playedAt: string
@@ -145,4 +150,6 @@ export interface ScoreBoardOutput {
   actualScore: number
   diff: number
   imp: number
+  /** BAM score for this board (NS perspective): +1 win, -1 loss, 0 tie */
+  bam: number
 }

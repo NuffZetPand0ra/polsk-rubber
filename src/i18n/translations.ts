@@ -79,6 +79,7 @@ export type TranslationKey =
   | 'tournament.matchFormat'
   | 'tournament.format.vp'
   | 'tournament.format.carryOver'
+  | 'tournament.format.bam'
   | 'tournament.create'
   | 'tournament.cancel'
   | 'tournament.delete'
@@ -184,6 +185,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'tournament.matchFormat': 'Kampformat',
     'tournament.format.vp': 'Kamppoint (VP)',
     'tournament.format.carryOver': 'Carry-over IMP',
+    'tournament.format.bam': 'Board-a-match (BAM)',
     'tournament.create': 'Opret turnering',
     'tournament.cancel': 'Annuller',
     'tournament.delete': 'Slet',
@@ -288,6 +290,7 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'tournament.matchFormat': 'Match format',
     'tournament.format.vp': 'Victory Points (VP)',
     'tournament.format.carryOver': 'Carry-over IMP',
+    'tournament.format.bam': 'Board-a-match (BAM)',
     'tournament.create': 'Create tournament',
     'tournament.cancel': 'Cancel',
     'tournament.delete': 'Delete',

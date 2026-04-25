@@ -42,11 +42,13 @@ function cleanupOrphanedBoardResultsStorage(tournaments: Tournament[]): void {
   }
 }
 
-function recomputeMatch(match: Match, boardsPerMatch: number): Match {
+function recomputeMatch(match: Match, boardsPerMatch: number, matchFormat: MatchFormat): Match {
   const totalImp = sumImps(match.boards.map((b) => b.imp))
+  const totalBam = match.boards.reduce((sum, b) => sum + (b.bam ?? 0), 0)
+  const isBam = matchFormat === 'bam'
   const isComplete = match.boards.length >= boardsPerMatch
-  const vpResult: Match['vpResult'] = isComplete ? impToVp(totalImp, boardsPerMatch) : null
-  return { ...match, totalImp, vpResult }
+  const vpResult: Match['vpResult'] = (!isBam && isComplete) ? impToVp(totalImp, boardsPerMatch) : null
+  return { ...match, totalImp, totalBam, vpResult }
 }
 
 // ---------------------------------------------------------------------------
@@ -159,6 +161,7 @@ export const useTournamentStore = create<TournamentState>()(
           ewPair: opts.ewPair,
           boards: [],
           totalImp: 0,
+          totalBam: 0,
           vpResult: null,
           playedAt: new Date().toISOString(),
         }
@@ -172,10 +175,12 @@ export const useTournamentStore = create<TournamentState>()(
         if (!match) return
         const tournament = tournaments.find((t) => t.id === match.tournamentId)
         const boardsPerMatch = tournament?.boardsPerMatch ?? 8
+        const matchFormat = tournament?.matchFormat ?? 'vp'
 
         const updated = recomputeMatch(
           { ...match, boards: [...match.boards, board] },
           boardsPerMatch,
+          matchFormat,
         )
 
         set((state) => ({
@@ -189,11 +194,12 @@ export const useTournamentStore = create<TournamentState>()(
         if (!match) return
         const tournament = tournaments.find((t) => t.id === match.tournamentId)
         const boardsPerMatch = tournament?.boardsPerMatch ?? 8
+        const matchFormat = tournament?.matchFormat ?? 'vp'
 
         const newBoards = match.boards.map((b) =>
           b.boardNumber === boardNumber ? board : b,
         )
-        const updated = recomputeMatch({ ...match, boards: newBoards }, boardsPerMatch)
+        const updated = recomputeMatch({ ...match, boards: newBoards }, boardsPerMatch, matchFormat)
 
         set((state) => ({
           matches: state.matches.map((m) => (m.id === matchId ? updated : m)),
