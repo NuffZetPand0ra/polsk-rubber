@@ -9,8 +9,13 @@ For each board, the app compares the actual score against an HCP-based datum and
 	- Create and manage tournaments
 	- Configure boards per match (8-32)
 	- Choose match format (VP or Carry-over IMP)
-	- Choose datum schema (Modern or Classic)
+	- Choose datum schema (Modern, Polsk Rubber, or Classic)
+	- Optional custom datum schema (CSV/TXT upload or pasted text)
 - Just Play mode for quick one-off entry
+- Manuals mode
+	- In-app markdown manuals with language-aware content
+	- English fallback when selected language content is missing
+	- Manuals are bundled for local/offline viewing in the app
 - Board-by-board entry
 	- Contract, declarer, result, vulnerability, and doubles
 	- Manual NS HCP input (0-40)
@@ -22,6 +27,7 @@ For each board, the app compares the actual score against an HCP-based datum and
 - Local persistence
 	- Tournaments and matches are persisted via Zustand
 	- Board entry state is saved in localStorage
+	- Custom datum schema and title are saved in localStorage
 - UI options
 	- Danish and English language toggle
 	- Light/Dark theme toggle
@@ -68,6 +74,16 @@ The repository contains unit tests for scoring utilities and component tests for
 ```bash
 npm run test:run
 ```
+
+## Manuals Authoring
+
+Manuals are maintained as markdown files per language and topic so they can be viewed both in the app and on GitHub.
+
+- Location: `src/data/manuals/{language}/{topic}.md`
+- Supported languages: `da`, `en`
+- Topic registry and fallback: `src/data/manuals/manifest.ts`
+
+If a manual is missing in the selected language, the app falls back to English content.
 
 ## CI
 

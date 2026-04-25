@@ -85,6 +85,18 @@ export type TranslationKey =
   | 'tournament.empty'
   | 'tournament.boards'
   | 'tournament.backToList'
+  | 'manuals.open'
+  | 'manuals.backToHome'
+  | 'manuals.title'
+  | 'manuals.intro'
+  | 'manuals.section.topics'
+  | 'manuals.fallbackNotice'
+  | 'manuals.topic.gettingStarted'
+  | 'manuals.topic.scoringDatum'
+  | 'manuals.topic.tournamentWorkflow'
+  | 'manuals.topicDescription.gettingStarted'
+  | 'manuals.topicDescription.scoringDatum'
+  | 'manuals.topicDescription.tournamentWorkflow'
 
 export const translations: Record<Language, Record<TranslationKey, string>> = {
   da: {
@@ -113,9 +125,9 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'customDatum.pastePlaceholder': 'HCP, non vul, vul\n20,0,0\n21,90,90',
     'customDatum.applyText': 'Gem indsatte datum-data',
     'customDatum.hint': 'Kolonner: HCP, non vul, vul. Komma eller semikolon. Header er valgfri.',
-    'customDatum.loaded': 'Brugerdefineret datum-skema er indlaest.',
-    'customDatum.required': 'Upload eller indsat et gyldigt brugerdefineret datum-skema for at fortsaette.',
-    'customDatum.errorPrefix': 'Kunne ikke indlaese datum-skema:',
+    'customDatum.loaded': 'Brugerdefineret datum-skema er indlæst.',
+    'customDatum.required': 'Upload eller indsæt et gyldigt brugerdefineret datum-skema for at fortsætte.',
+    'customDatum.errorPrefix': 'Kunne ikke indlæse datum-skema:',
     'field.contract': 'Kontrakt (fx 4H, 3NT)',
     'field.contractLevel': 'Kontrakttrin',
     'field.contractSuit': 'Kontraktfarve',
@@ -148,12 +160,12 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'result.made': 'Vundet',
     'preview.button.show': 'Vis datum-skema',
     'preview.button.hide': 'Skjul datum-skema',
-    'preview.button.open': 'Forhaandsvis',
+    'preview.button.open': 'Forhåndsvis',
     'preview.button.close': 'Luk',
     'preview.title': 'Forhåndsvisning af score-skema (HCP → point)',
-    'preview.description.modern': 'Moderne schema med fokus pa sammenhaengende progression fra delkontrakter til udgange/slam.',
-    'preview.description.polskRubber': 'Polsk Rubber schema med de faste klubvaerdier for HCP-intervaller.',
-    'preview.description.classic': 'Klassisk schema med den traditionelle datumskala.',
+    'preview.description.modern': 'Moderne skema med fokus på sammenhængende progression fra delkontrakter til udgange og slam.',
+    'preview.description.polskRubber': 'Polsk Rubber-skema med de faste klubværdier for HCP-intervaller.',
+    'preview.description.classic': 'Klassisk skema med den traditionelle datumskala.',
     'preview.hcp': 'HCP',
     'preview.nv': 'UZ',
     'preview.vul': 'IZ',
@@ -173,6 +185,18 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'tournament.empty': 'Ingen turneringer endnu. Opret en for at komme i gang.',
     'tournament.boards': 'spil/kamp',
     'tournament.backToList': '← Turneringer',
+    'manuals.open': 'Manualer',
+    'manuals.backToHome': '← Tilbage til turneringer',
+    'manuals.title': 'Brugermanualer',
+    'manuals.intro': 'Læs vejledninger om opsætning, scoring og turneringsflow. Indhold vises på aktuelt sprog med engelsk fallback ved manglende oversættelse.',
+    'manuals.section.topics': 'Emner',
+    'manuals.fallbackNotice': 'Denne manual findes ikke på aktuelt sprog endnu. Viser engelsk version.',
+    'manuals.topic.gettingStarted': 'Kom i gang',
+    'manuals.topic.scoringDatum': 'Scoring og datum',
+    'manuals.topic.tournamentWorkflow': 'Turnerings-workflow',
+    'manuals.topicDescription.gettingStarted': 'Oversigt over de vigtigste funktioner og hurtig opstart.',
+    'manuals.topicDescription.scoringDatum': 'Forklaring af datum-opslag, diff og IMP-beregning.',
+    'manuals.topicDescription.tournamentWorkflow': 'Trinvis guide fra oprettelse til afslutning af turnering.',
   },
   en: {
     'app.badge': 'Polsk Rubber',
@@ -260,5 +284,17 @@ export const translations: Record<Language, Record<TranslationKey, string>> = {
     'tournament.empty': 'No tournaments yet. Create one to get started.',
     'tournament.boards': 'boards/match',
     'tournament.backToList': '← Tournaments',
+    'manuals.open': 'Manuals',
+    'manuals.backToHome': '← Back to tournaments',
+    'manuals.title': 'User Manuals',
+    'manuals.intro': 'Read guides for setup, scoring, and tournament workflow. Content follows your selected language with English fallback when translation is missing.',
+    'manuals.section.topics': 'Topics',
+    'manuals.fallbackNotice': 'This manual is not available in your selected language yet. Showing English fallback.',
+    'manuals.topic.gettingStarted': 'Getting Started',
+    'manuals.topic.scoringDatum': 'Scoring and Datum',
+    'manuals.topic.tournamentWorkflow': 'Tournament Workflow',
+    'manuals.topicDescription.gettingStarted': 'Overview of key features and quick startup path.',
+    'manuals.topicDescription.scoringDatum': 'How datum lookup, diff, and IMP conversion work.',
+    'manuals.topicDescription.tournamentWorkflow': 'Step-by-step guide from creation to completion.',
   },
 }

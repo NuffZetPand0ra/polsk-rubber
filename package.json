@@ -14,8 +14,13 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@fontsource/manrope": "^5.2.8",
+    "@fontsource/source-serif-4": "^5.2.9",
+    "@tailwindcss/typography": "^0.5.19",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "zustand": "^5.0.12"
   },
   "devDependencies": {

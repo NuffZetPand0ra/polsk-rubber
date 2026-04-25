@@ -3,12 +3,16 @@ import TournamentHome from './components/TournamentHome'
 import BoardEntry from './components/BoardEntry'
 import type { Tournament } from './types'
 import JustPlay from './components/JustPlay'
+import Manuals from './components/Manuals'
 
 function App() {
   const [activeTournament, setActiveTournament] = useState<Tournament | null>(null)
   const [justPlay, setJustPlay] = useState(false)
+  const [showManuals, setShowManuals] = useState(false)
 
-  const content = justPlay
+  const content = showManuals
+    ? <Manuals onBack={() => setShowManuals(false)} />
+    : justPlay
     ? <JustPlay />
     : activeTournament
       ? (
@@ -17,7 +21,13 @@ function App() {
             onBack={() => setActiveTournament(null)}
           />
         )
-      : <TournamentHome onOpen={setActiveTournament} justPlay={() => setJustPlay(true)} />
+      : (
+          <TournamentHome
+            onOpen={setActiveTournament}
+            justPlay={() => setJustPlay(true)}
+            onOpenManuals={() => setShowManuals(true)}
+          />
+        )
 
   return (
     <div className="min-h-screen flex flex-col">
