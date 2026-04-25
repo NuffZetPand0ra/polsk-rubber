@@ -286,4 +286,83 @@ describe('BoardEntry', () => {
     fireEvent.change(screen.getByLabelText('Kontrakttrin'), { target: { value: '7' } })
     expect(screen.getByDisplayValue('Vundet')).toBeInTheDocument()
   })
+
+  it('loads an existing board when board number is clicked in results table', () => {
+    const tournament: Tournament = {
+      ...mockTournament,
+      id: 'click-board-load',
+      boardsPerMatch: 3,
+    }
+
+    localStorage.setItem(
+      'boardResults:click-board-load',
+      JSON.stringify({
+        main: [
+          {
+            board: 1,
+            contract: '4H',
+            declarer: 'S',
+            result: 1,
+            vulnerability: 'NS',
+            doubled: 'X',
+            imp: 9,
+            hcp: 24,
+            actualScore: 690,
+          },
+        ],
+      }),
+    )
+
+    renderBoardEntry(tournament)
+
+    fireEvent.click(screen.getByRole('button', { name: '1' }))
+
+    expect(screen.getByDisplayValue('1')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('4')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('♥')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Syd')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('+1')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('X')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('24')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /delete result/i })).toBeInTheDocument()
+  })
+
+  it('deletes selected board result and resets form while keeping board number', () => {
+    const tournament: Tournament = {
+      ...mockTournament,
+      id: 'delete-board-result',
+      boardsPerMatch: 3,
+    }
+
+    localStorage.setItem(
+      'boardResults:delete-board-result',
+      JSON.stringify({
+        main: [
+          {
+            board: 1,
+            contract: '4H',
+            declarer: 'S',
+            result: 1,
+            vulnerability: 'NS',
+            doubled: 'X',
+            imp: 9,
+            hcp: 24,
+            actualScore: 690,
+          },
+        ],
+      }),
+    )
+
+    renderBoardEntry(tournament)
+
+    fireEvent.click(screen.getByRole('button', { name: '1' }))
+    fireEvent.click(screen.getByRole('button', { name: /delete result/i }))
+
+    expect(screen.queryByText(/board results/i)).not.toBeInTheDocument()
+    expect(screen.getByLabelText('Board #')).toHaveValue(1)
+    expect(screen.getByDisplayValue('♣')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Nord')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('20')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /delete result/i })).not.toBeInTheDocument()
+  })
 })

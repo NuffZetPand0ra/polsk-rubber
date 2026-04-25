@@ -208,6 +208,12 @@ export default function BoardEntry({ tournament, onBack }: Props) {
         ? `${t('error.scoringFailed')} ${errorMessage ?? ''}`.trim()
         : null
 
+  const selectedBoardResult = boardResults.find((entry) => entry.board === boardNumber) ?? null
+
+  const handleSelectBoard = (board: number) => {
+    setBoardNumber(board)
+  }
+
   const handleSubmitBoard = () => {
     if (data && boardNumber !== null) {
       setBoardResults((prev) => {
@@ -280,6 +286,22 @@ export default function BoardEntry({ tournament, onBack }: Props) {
     onBack()
   }
 
+  const handleDeleteBoardResult = () => {
+    if (boardNumber === null) {
+      return
+    }
+
+    setBoardResults((prev) => prev.filter((entry) => entry.board !== boardNumber))
+    setContractLevel(1)
+    setContractSuit('C')
+    setDeclarer('N')
+    setResult(0)
+    setVulnerability(getBoardVulnerability(boardNumber))
+    setDoubled(null)
+    setManualHcp(20)
+    setShowEndPopup(false)
+  }
+
   const [vpNS, vpEW] = goldenMeanVP(Math.abs(impTally), boardsPerMatch)
   const vpLabel = impTally >= 0 ? `${vpNS} - ${vpEW}` : `${vpEW} - ${vpNS}`
 
@@ -311,7 +333,15 @@ export default function BoardEntry({ tournament, onBack }: Props) {
                 <tbody>
                   {boardResults.map((r) => (
                     <tr key={r.board}>
-                      <td className="border px-2 py-1">{r.board}</td>
+                      <td className="border px-2 py-1">
+                        <button
+                          type="button"
+                          className="font-semibold text-blue-700 hover:underline dark:text-blue-300"
+                          onClick={() => handleSelectBoard(r.board)}
+                        >
+                          {r.board}
+                        </button>
+                      </td>
                       <td className="border px-2 py-1">{r.hcp}</td>
                       <td className="border px-2 py-1">{r.contract}</td>
                       <td className="border px-2 py-1">{r.declarer}</td>
@@ -423,14 +453,25 @@ export default function BoardEntry({ tournament, onBack }: Props) {
             <span className="text-xs text-slate-500">(Vul: {vulnerability})</span>
           </div>
           <div className="mt-2">
-            <button
-              type="button"
-              className="rounded bg-blue-600 text-white px-4 py-2 font-semibold hover:bg-blue-700"
-              onClick={handleSubmitBoard}
-              disabled={!data || boardNumber === null}
-            >
-              Enter Board Result
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="rounded bg-blue-600 text-white px-4 py-2 font-semibold hover:bg-blue-700"
+                onClick={handleSubmitBoard}
+                disabled={!data || boardNumber === null}
+              >
+                Enter Board Result
+              </button>
+              {selectedBoardResult ? (
+                <button
+                  type="button"
+                  className="rounded bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700"
+                  onClick={handleDeleteBoardResult}
+                >
+                  Delete Result
+                </button>
+              ) : null}
+            </div>
           </div>
 
           <div className="mt-4 grid gap-4 md:grid-cols-2">
@@ -587,7 +628,15 @@ export default function BoardEntry({ tournament, onBack }: Props) {
                 <tbody>
                   {boardResults.map((r) => (
                     <tr key={r.board}>
-                      <td className="border px-2 py-1">{r.board}</td>
+                      <td className="border px-2 py-1">
+                        <button
+                          type="button"
+                          className="font-semibold text-blue-700 hover:underline dark:text-blue-300"
+                          onClick={() => handleSelectBoard(r.board)}
+                        >
+                          {r.board}
+                        </button>
+                      </td>
                       <td className="border px-2 py-1">{r.hcp}</td>
                       <td className="border px-2 py-1">{r.contract}</td>
                       <td className="border px-2 py-1">{r.declarer}</td>
